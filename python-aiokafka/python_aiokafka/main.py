@@ -1,21 +1,48 @@
+import argparse
 import asyncio
-import ssl
 
-from aiokafka import AIOKafkaProducer
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, TopicPartition
 
-SOURCE_TOPIC = "python-aiokafka"
-DESTINATION_TOPIC = "python-aiokafka"
-
+CONSUMER_GROUP_ID = "python-consumer"
 
 def run():
-    asyncio.run(produce())
+    parser = argparse.ArgumentParser(description='python kafka consumer and producer implementation with aiokafka')
+    parser.add_argument('source_topic', type=str, help='the name of the topic to consume from')
+    parser.add_argument('destination_topic', type=str, help='the name of the topic to produce to')
+    args = parser.parse_args()
+    asyncio.run(consume(args.source_topic, args.destination_topic))
 
 
-async def produce():
-    kafka_producer = AIOKafkaProducer(
+async def consume(source_topic, destination_topic):
+    consumer = AIOKafkaConsumer(
+        source_topic,
+        bootstrap_servers="kafka:9092",
+        client_id="aiokafka-consumer",
+        enable_auto_commit=False,
+        group_id=CONSUMER_GROUP_ID,
+        auto_offset_reset="latest"
+    )
+    producer = AIOKafkaProducer(
         bootstrap_servers="kafka:9092",
         client_id="aiokafka-producer",
+        transactional_id="python",
     )
-    await kafka_producer.start()
-    await kafka_producer.send(DESTINATION_TOPIC, value=bytes("ping", "utf-8"))
-    await kafka_producer.stop()
+    await consumer.start()
+    await producer.start()
+    try:
+        async for msg in consumer:
+            print("consumed: ", msg)
+            async with producer.transaction():
+                sent = await producer.send(destination_topic, value=msg.value)
+                print("produced: ", await(sent))
+                await producer.send_offsets_to_transaction(offsets={
+                        TopicPartition(
+                            topic=msg.topic,
+                            partition=msg.partition,
+                        ): msg.offset
+                        + 1,
+                    },
+                    group_id=CONSUMER_GROUP_ID,)
+    finally:
+        await consumer.stop()
+        await producer.stop()
