@@ -1,2 +1,11 @@
-# kafka-playground
-sandbox for kafka integration events
+TODO:
+- elixir consumer and producer
+- rust consumer and producer
+- python consumer and producer
+- schema registry naming strategies
+- code generation
+- Avro (or protobuf?)
+- spark?
+- events examples?
+- distributed tracing?
+- encryption?
