@@ -19,6 +19,8 @@ services:
       - redpanda-data:/var/lib/redpanda/data
     ports:
       - "8081:8081"
+      - "8082:8082"
+      - "9092:9092"
       - "29092:29092"
     healthcheck:
       test: ["CMD", "curl", "--fail", "localhost:9644/v1/status/ready"]

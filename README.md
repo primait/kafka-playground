@@ -9,3 +9,4 @@ TODO:
 - events examples?
 - distributed tracing?
 - encryption?
+- transactions?

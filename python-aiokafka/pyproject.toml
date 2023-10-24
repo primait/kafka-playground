@@ -11,6 +11,13 @@ python = "^3.10"
 aiokafka = "^0.8.1"
 
 
+[tool.poetry.group.dev.dependencies]
+black = "^23.10.1"
+isort = "^5.12.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+python_aiokafka = "python_aiokafka.main:run"
