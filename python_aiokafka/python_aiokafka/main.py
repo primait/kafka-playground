@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import uuid
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, TopicPartition
 
@@ -25,7 +26,7 @@ async def consume(source_topic, destination_topic):
     producer = AIOKafkaProducer(
         bootstrap_servers="kafka:9092",
         client_id="aiokafka-producer",
-        transactional_id=f"python-{destination_topic}",
+        transactional_id=f"python-{str(uuid.uuid4())}",
     )
     await consumer.start()
     await producer.start()
