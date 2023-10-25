@@ -19,13 +19,13 @@ async def consume(source_topic, destination_topic):
         bootstrap_servers="kafka:9092",
         client_id="aiokafka-consumer",
         enable_auto_commit=False,
-        group_id=CONSUMER_GROUP_ID,
+        group_id=f"CONSUMER_GROUP_ID-{source_topic}",
         auto_offset_reset="latest"
     )
     producer = AIOKafkaProducer(
         bootstrap_servers="kafka:9092",
         client_id="aiokafka-producer",
-        transactional_id="python",
+        transactional_id=f"python-{destination_topic}",
     )
     await consumer.start()
     await producer.start()
