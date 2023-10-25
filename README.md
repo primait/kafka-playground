@@ -5,13 +5,14 @@ TODO:
 - [ ] schema registry naming strategies
 - [ ] code generation
 - [ ] Avro (or protobuf?)
-- [ ] auth
+- [ ] auth (more than one set of credentials)
 - [ ] kafka containers
 - [ ] spark?
 - [ ] events examples?
 - [ ] distributed tracing?
 - [ ] encryption?
 - [ ] transactions?
+- [ ] CI?
 
 To produce a (text) message on a topic use this:
 
