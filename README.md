@@ -1,5 +1,5 @@
 TODO:
-- [ ] elixir consumer and producer
+- [x] elixir consumer and producer
 - [ ] rust consumer and producer
 - [x] python consumer and producer
 - [ ] schema registry naming strategies
