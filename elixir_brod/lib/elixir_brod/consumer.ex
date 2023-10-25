@@ -23,7 +23,7 @@ defmodule ElixirBrod.Consumer do
       topics: [source_topic],
       cb_module: __MODULE__,
       consumer_config: [{:begin_offset, :latest}],
-      init_data: [destination_topic: destination_topic] |> IO.inspect(label: :init_data),
+      init_data: [destination_topic: destination_topic],
       message_type: :message
     }
 
@@ -41,8 +41,7 @@ defmodule ElixirBrod.Consumer do
 
   @impl :brod_group_subscriber_v2
   def handle_message(kafka_message(value: value) = message, state) do
-    IO.inspect(state, label: :state)
-    IO.inspect(message, label: :message)
+    Logger.info("message consumed: #{inspect(message)}")
     :brod.produce_sync(:kafka_client, Keyword.fetch!(state, :destination_topic), 0, "", value)
     {:ok, :commit, state}
   end

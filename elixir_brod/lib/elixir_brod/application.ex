@@ -6,7 +6,11 @@ defmodule ElixirBrod.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      {ElixirBrod.Consumer, ["two", "one"]}
+      {ElixirBrod.Consumer,
+       [
+         Application.fetch_env!(:elixir_brod, :source_topic),
+         Application.fetch_env!(:elixir_brod, :destination_topic)
+       ]}
     ]
 
     opts = [strategy: :one_for_one, name: ElixirBrod.Supervisor]
