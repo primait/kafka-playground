@@ -23,6 +23,7 @@ services:
     environment:
       SOURCE: one
       DESTINATION: one
+
   redpanda:
     image: redpandadata/redpanda:v22.3.20
     command:
@@ -74,6 +75,18 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    depends_on:
+      - redpanda
+
+  rust:
+    build: rust_rdkafka
+    container_name: rust_rdkafka
+    hostname: rust_rdkafka
+    environment:
+      CARGO_TARGET_DIR: "target-docker"
+    volumes:
+      - ".:/code"
+    working_dir: "/code/rust_rdkafka"
     depends_on:
       - redpanda
 

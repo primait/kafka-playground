@@ -6,11 +6,12 @@ use rdkafka::config::ClientConfig;
 use rdkafka::message::{Header, OwnedHeaders, ToBytes};
 use rdkafka::producer::future_producer::OwnedDeliveryResult;
 use rdkafka::producer::{FutureProducer, FutureRecord};
-use text_io::read;
+use rust_rdkafka::create_producer;
 use rust_rdkafka::setup_logger;
 use rust_rdkafka::TheMessage;
+use text_io::read;
+use uuid::Uuid;
 
-const BROKERS: &str = "kafka";
 const TOPIC: &str = "topic-test";
 
 #[derive(Parser, Debug)]
@@ -18,9 +19,6 @@ const TOPIC: &str = "topic-test";
 struct Args {
     #[arg(short, long, default_value = "true")]
     verbose: bool,
-
-    #[arg(short, long, default_value = BROKERS)]
-    brokers: String,
 
     #[arg(short, long, default_value = TOPIC)]
     topic: String,
@@ -39,21 +37,21 @@ async fn main() {
     info!("Args: {:?}", args);
 
     if args.interactive {
-        produce_interactive(&args.brokers, &args.topic).await;
+        produce_interactive(&args.topic).await;
     } else {
-        produce_number(args.verbose, &args.brokers, &args.topic, args.number).await;
+        produce_number(args.verbose, &args.topic, args.number).await;
     }
 }
 
-pub async fn produce_number(verbose: bool, brokers: &str, topic: &str, number: usize) {
+pub async fn produce_number(verbose: bool, topic: &str, number: usize) {
     if verbose {
         info!(
-            "Creating producer {{ brokers: {}, topic: {}, num. of messages: {} }}",
-            brokers, topic, number
+            "Creating producer {{ topic: {}, num. of messages: {} }}",
+            topic, number
         );
     }
 
-    let producer: &FutureProducer = &create_producer(brokers);
+    let producer: &FutureProducer = &create_producer(false);
 
     let futures = (0..number)
         .map(|i| async move {
@@ -81,12 +79,9 @@ pub async fn produce_number(verbose: bool, brokers: &str, topic: &str, number: u
     }
 }
 
-pub async fn produce_interactive(brokers: &str, topic: &str) {
-    info!(
-        "Creating interactive producer {{ brokers: {}, topic: {} }}",
-        brokers, topic,
-    );
-    let producer: &FutureProducer = &create_producer(brokers);
+pub async fn produce_interactive(topic: &str) {
+    info!("Creating interactive producer {{ topic: {} }}", topic,);
+    let producer: &FutureProducer = &create_producer(false);
     let mut key = 1;
 
     loop {
@@ -135,12 +130,4 @@ pub async fn deliver(
             Duration::from_secs(0),
         )
         .await
-}
-
-fn create_producer(brokers: &str) -> FutureProducer {
-    ClientConfig::new()
-        .set("bootstrap.servers", brokers)
-        .set("message.timeout.ms", "5000")
-        .create()
-        .expect("Producer creation error")
 }

@@ -2,10 +2,14 @@ use chrono::prelude::*;
 use env_logger::fmt::Formatter;
 use env_logger::Builder;
 use log::{LevelFilter, Record};
+use rdkafka::message::ToBytes;
+use rdkafka::producer::{FutureProducer, Producer};
+use rdkafka::ClientConfig;
+use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::thread;
-use rdkafka::message::ToBytes;
-use serde::{Deserialize, Serialize};
+use std::time::Duration;
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
 pub struct TheMessage {
@@ -55,4 +59,17 @@ pub fn setup_logger(log_thread: bool, rust_log: Option<&str>) {
     rust_log.map(|conf| builder.parse_filters(conf));
 
     builder.init();
+}
+
+pub fn create_producer(transactional: bool) -> FutureProducer {
+    let mut config = ClientConfig::new();
+
+    config
+        .set("bootstrap.servers", "kafka")
+        .set("message.timeout.ms", "5000");
+    if transactional {
+        config.set("transactional.id", &Uuid::new_v4().to_string());
+    }
+    let producer = config.create().expect("Producer creation error");
+    producer
 }

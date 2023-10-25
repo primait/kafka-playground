@@ -1,2 +1,3 @@
 __pycache__/
 rust_rdkafka/target
+rust_rdkafka/target-docker

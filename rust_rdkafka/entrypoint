@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [ -n "$1" ]; then
+  sh -c "$@"
+else
+  cargo make watch-run ${BINARY:-web}
+fi
