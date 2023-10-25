@@ -1,11 +1,22 @@
 version: "3"
 
 services:
+  python_aiokafka:
+    build:
+      context: python_aiokafka
+    volumes:
+      - ./python_aiokafka:/code
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    environment:
+      SOURCE: one
+      DESTINATION: one
   elixir_brod:
     build:
       context: elixir_brod
     volumes:
-      - ./elixir_brod/:/code
+      - ./elixir_brod:/code
     depends_on:
       redpanda:
         condition: service_healthy
