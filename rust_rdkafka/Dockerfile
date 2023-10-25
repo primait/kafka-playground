@@ -1,6 +1,5 @@
 FROM public.ecr.aws/prima/rust:1.70.0
 
-WORKDIR /code
 COPY entrypoint /code/entrypoint
 
 RUN chown -R app:app /code
@@ -14,4 +13,6 @@ RUN curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C "${CARGO_HOME:-~
 # Needed to have the same file owner in the container and in Linux host
 USER app
 
-ENTRYPOINT ["./entrypoint"]
+WORKDIR /code
+
+CMD ["cargo", "run"]
