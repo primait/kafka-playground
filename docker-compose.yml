@@ -1,7 +1,17 @@
 version: "3"
 
 services:
-
+  elixir_brod:
+    build:
+      context: elixir_brod
+    volumes:
+      - ./elixir_brod/:/code
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    environment:
+      SOURCE: one
+      DESTINATION: one
   redpanda:
     image: redpandadata/redpanda:v22.3.20
     command:
