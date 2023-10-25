@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use clap::Parser;
 use log::info;
-use rdkafka::config::ClientConfig;
 use rdkafka::message::{Header, OwnedHeaders, ToBytes};
 use rdkafka::producer::future_producer::OwnedDeliveryResult;
 use rdkafka::producer::{FutureProducer, FutureRecord};
@@ -10,10 +9,7 @@ use rust_rdkafka::create_producer;
 use rust_rdkafka::setup_logger;
 use rust_rdkafka::TheMessage;
 use text_io::read;
-use uuid::Uuid;
-
 const TOPIC: &str = "topic-test";
-
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {

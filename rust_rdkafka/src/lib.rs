@@ -3,12 +3,11 @@ use env_logger::fmt::Formatter;
 use env_logger::Builder;
 use log::{LevelFilter, Record};
 use rdkafka::message::ToBytes;
-use rdkafka::producer::{FutureProducer, Producer};
+use rdkafka::producer::FutureProducer;
 use rdkafka::ClientConfig;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::thread;
-use std::time::Duration;
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
