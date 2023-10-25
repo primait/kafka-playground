@@ -1,12 +1,13 @@
 TODO:
 - [x] elixir consumer and producer
-- [ ] rust consumer and producer
+- [x] rust consumer and producer
 - [x] python consumer and producer
+- [ ] Avro (or protobuf?)
 - [ ] schema registry naming strategies
 - [ ] code generation
-- [ ] Avro (or protobuf?)
 - [ ] auth (more than one set of credentials)
 - [ ] kafka containers
+- [ ] debug performance issues when running 3 containers?
 - [ ] spark?
 - [ ] events examples?
 - [ ] distributed tracing?
