@@ -1,14 +1,14 @@
+use std::fmt::Debug;
 use std::time::Duration;
 
 use clap::Parser;
-use log::info;
 use rdkafka::message::{Header, OwnedHeaders, ToBytes};
 use rdkafka::producer::future_producer::OwnedDeliveryResult;
 use rdkafka::producer::{FutureProducer, FutureRecord};
-use rust_rdkafka::create_producer;
-use rust_rdkafka::setup_logger;
 use rust_rdkafka::TheMessage;
+use rust_rdkafka::{create_producer, setup_opentelemetry};
 use text_io::read;
+use tracing::info;
 const TOPIC: &str = "topic-test";
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -28,9 +28,9 @@ struct Args {
 
 #[tokio::main]
 async fn main() {
-    setup_logger(true, None);
+    let _guard = setup_opentelemetry();
     let args: Args = Args::parse();
-    info!("Args: {:?}", args);
+    info!("Args:");
 
     if args.interactive {
         produce_interactive(&args.topic).await;
@@ -39,7 +39,10 @@ async fn main() {
     }
 }
 
+#[tracing::instrument]
 pub async fn produce_number(verbose: bool, topic: &str, number: usize) {
+    println!("span");
+
     if verbose {
         info!(
             "Creating producer {{ topic: {}, num. of messages: {} }}",
@@ -71,7 +74,7 @@ pub async fn produce_number(verbose: bool, topic: &str, number: usize) {
 
     // This loop will wait until all delivery statuses have been received.
     for future in futures {
-        info!("Future completed. Result: {:?}", future.await);
+        future.await.expect("future error");
     }
 }
 
@@ -104,15 +107,16 @@ pub async fn produce_interactive(topic: &str) {
             key += 1;
         }
 
-        info!("message sent, delivery status: {:?}", delivery_status);
+        tracing::info!("message sent, delivery status: {:?}", delivery_status);
     }
 }
 
+#[tracing::instrument(skip(producer))]
 pub async fn deliver(
     producer: &FutureProducer,
     topic_name: &str,
     key: String,
-    message: impl ToBytes,
+    message: impl ToBytes + Debug,
 ) -> OwnedDeliveryResult {
     producer
         .send(

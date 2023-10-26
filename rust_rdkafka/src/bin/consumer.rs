@@ -1,14 +1,31 @@
 use clap::{Parser, ValueEnum};
-use log::{info, warn};
 use rdkafka::config::RDKafkaLogLevel;
 use rdkafka::consumer::{CommitMode, Consumer, StreamConsumer};
 use rdkafka::message::Headers;
 use rdkafka::{ClientConfig, Message};
+use rust_rdkafka::setup_opentelemetry;
 use std::string::ToString;
+use tracing::{info, warn};
 use uuid::Uuid;
-use rust_rdkafka::setup_logger;
 
 const BROKERS: &str = "kafka";
+
+#[tokio::main]
+async fn main() {
+    setup_opentelemetry();
+
+    let args: Args = Args::parse();
+    info!("Args: {:?}", args);
+    let group_id = args.group_id.unwrap_or_else(|| Uuid::new_v4().to_string());
+    consume_and_print(
+        args.verbose,
+        &args.brokers,
+        &args.topics.iter().map(|s| &**s).collect(),
+        &group_id,
+        args.offset_reset,
+    )
+    .await
+}
 
 async fn consume_and_print(
     verbose: bool,
@@ -109,21 +126,4 @@ impl ToString for OffsetReset {
             OffsetReset::Earliest => "earliest".to_string(),
         }
     }
-}
-
-#[tokio::main]
-async fn main() {
-    setup_logger(true, None);
-
-    let args: Args = Args::parse();
-    info!("Args: {:?}", args);
-    let group_id = args.group_id.unwrap_or_else(|| Uuid::new_v4().to_string());
-    consume_and_print(
-        args.verbose,
-        &args.brokers,
-        &args.topics.iter().map(|s| &**s).collect(),
-        &group_id,
-        args.offset_reset,
-    )
-        .await
 }

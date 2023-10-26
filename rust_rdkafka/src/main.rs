@@ -1,14 +1,16 @@
 use clap::Parser;
 use log::{info, warn};
+
 use rdkafka::config::RDKafkaLogLevel;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::producer::{FutureRecord, Producer};
 use rdkafka::Offset::Offset;
 use rdkafka::{ClientConfig, Message, TopicPartitionList};
-use rust_rdkafka::{create_producer, setup_logger};
+use rust_rdkafka::{create_producer, setup_opentelemetry};
 use std::collections::HashMap;
 use std::env;
 use std::time::Duration;
+use tracing::info_span;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -22,7 +24,8 @@ struct Args {
 
 #[tokio::main]
 async fn main() {
-    setup_logger(true, None);
+    let _guard = setup_opentelemetry();
+    let _span = info_span!("MySpan");
     let args: Args = Args::parse();
 
     let source = args.source.unwrap_or_else(|| env::var("SOURCE").unwrap());
