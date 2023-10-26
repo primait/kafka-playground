@@ -24,7 +24,6 @@ struct Args {
 async fn main() {
     setup_logger(true, None);
     let args: Args = Args::parse();
-    info!("Args: {:?}", args);
 
     let source = args.source.unwrap_or_else(|| env::var("SOURCE").unwrap());
     let destination = args
