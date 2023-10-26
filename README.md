@@ -10,7 +10,7 @@ TODO:
 - [ ] debug performance issues when running 3 containers?
 - [ ] spark?
 - [ ] events examples?
-- [ ] distributed tracing?
+- [ ] distributed tracing? datadog compatibility with follow_from?
 - [ ] encryption?
 - [ ] transactions?
 - [ ] CI?
