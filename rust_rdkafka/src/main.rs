@@ -25,7 +25,6 @@ struct Args {
 #[tokio::main]
 async fn main() {
     let _guard = setup_opentelemetry();
-    let _span = info_span!("MySpan");
     let args: Args = Args::parse();
 
     let source = args.source.unwrap_or_else(|| env::var("SOURCE").unwrap());

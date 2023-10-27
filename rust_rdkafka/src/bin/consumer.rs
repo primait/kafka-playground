@@ -1,6 +1,6 @@
 use clap::{Parser, ValueEnum};
 use opentelemetry::propagation::Extractor;
-use opentelemetry::trace::{Span, Tracer};
+use opentelemetry::trace::{Link, Span, SpanKind, TraceContextExt, Tracer};
 use opentelemetry::{global, Key, KeyValue, StringValue};
 use rdkafka::config::RDKafkaLogLevel;
 use rdkafka::consumer::{CommitMode, Consumer, StreamConsumer};
@@ -69,7 +69,6 @@ async fn consume_and_print(
 }
 
 fn consume_message(consumer: &StreamConsumer, m: BorrowedMessage, verbose: bool) {
-    dbg!("consume_message");
     let key = m
         .key()
         .and_then(|key| std::str::from_utf8(key).ok())
@@ -86,7 +85,16 @@ fn consume_message(consumer: &StreamConsumer, m: BorrowedMessage, verbose: bool)
         let context = global::get_text_map_propagator(|propagator| {
             propagator.extract(&HeaderExtractor(&headers))
         });
-        let mut span = global::tracer("consumer").start_with_context("consume_payload", &context);
+        let tracer = global::tracer("consumer");
+        let mut span = tracer
+            .span_builder("consume message")
+            .with_kind(SpanKind::Consumer)
+            .with_links(vec![Link::new(
+                context.span().span_context().clone(),
+                vec![],
+            )])
+            .start(&tracer);
+
         span.set_attribute(KeyValue {
             key: Key::new("payload"),
             value: opentelemetry::Value::String(StringValue::from(payload.to_string())),

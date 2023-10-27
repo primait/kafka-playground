@@ -3,9 +3,9 @@ use std::time::Duration;
 
 use clap::Parser;
 use opentelemetry::propagation::Injector;
-use opentelemetry::trace::{Span, TraceContextExt, Tracer};
+use opentelemetry::trace::{Span, SpanKind, TraceContextExt, Tracer};
 use opentelemetry::{global, Context, KeyValue};
-use rdkafka::message::{Header, Headers, OwnedHeaders, ToBytes};
+use rdkafka::message::{Headers, OwnedHeaders, ToBytes};
 use rdkafka::producer::future_producer::OwnedDeliveryResult;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rust_rdkafka::TheMessage;
@@ -120,7 +120,11 @@ pub async fn deliver(
     key: String,
     message: impl ToBytes + Debug,
 ) -> OwnedDeliveryResult {
-    let mut span = global::tracer("producer").start("message delivery to kafka");
+    let tracer = global::tracer("producer");
+    let mut span = tracer
+        .span_builder("message delivery to kafka")
+        .with_kind(SpanKind::Producer)
+        .start(&tracer);
     span.set_attribute(KeyValue::new("topic", topic_name.to_owned()));
     span.set_attribute(KeyValue::new("message", format!("{:?}", message)));
     let context = Context::current_with_span(span);
