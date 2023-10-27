@@ -25,6 +25,8 @@ services:
     depends_on:
       redpanda:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     environment:
       SOURCE: two
       DESTINATION: three

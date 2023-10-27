@@ -1,5 +1,6 @@
 defmodule ElixirBrod.Consumer do
   require Logger
+  require OpenTelemetry.Tracer
   require Record
 
   Record.defrecord(
@@ -15,6 +16,8 @@ defmodule ElixirBrod.Consumer do
   defstruct [:destination_topic]
 
   @behaviour :brod_group_subscriber_v2
+
+  @producer Application.compile_env(:elixir_brod, :producer_module, :brod)
 
   def child_spec([source_topic, destination_topic]) do
     config = %{
@@ -41,8 +44,22 @@ defmodule ElixirBrod.Consumer do
 
   @impl :brod_group_subscriber_v2
   def handle_message(kafka_message(value: value) = message, state) do
-    Logger.info("message consumed: #{inspect(message)}")
-    :brod.produce_sync(:kafka_client, Keyword.fetch!(state, :destination_topic), 0, "", value)
-    {:ok, :commit, state}
+    OpenTelemetry.Tracer.with_span :consume do
+      OpenTelemetry.Tracer.with_span :internal do
+        Logger.info("message consumed: #{inspect(message)}")
+
+        OpenTelemetry.Tracer.with_span :producer do
+          @producer.produce_sync(
+            :kafka_client,
+            Keyword.fetch!(state, :destination_topic),
+            0,
+            "",
+            value
+          )
+        end
+
+        {:ok, :commit, state}
+      end
+    end
   end
 end

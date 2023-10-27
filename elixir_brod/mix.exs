@@ -25,7 +25,10 @@ defmodule ElixirBrod.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:brod, "~> 3.17.0"}
+      {:brod, "~> 3.17.0"},
+      {:opentelemetry, "~> 1.3.1"},
+      {:opentelemetry_exporter, "~> 1.6.0"},
+      {:opentelemetry_api, "~> 1.2.2"}
     ]
   end
 end
