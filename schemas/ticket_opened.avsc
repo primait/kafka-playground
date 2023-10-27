@@ -1,0 +1,8 @@
+{
+   "type" : "record",
+   "namespace" : "TicketingSystem",
+   "name" : "TicketOpened",
+   "fields" : [
+      { "name" : "Name" , "type" : "string" }
+   ]
+}
