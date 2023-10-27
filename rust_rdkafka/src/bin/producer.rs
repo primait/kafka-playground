@@ -2,13 +2,17 @@ use std::fmt::Debug;
 use std::time::Duration;
 
 use clap::Parser;
-use rdkafka::message::{Header, OwnedHeaders, ToBytes};
+use opentelemetry::propagation::Injector;
+use opentelemetry::trace::{Span, TraceContextExt, Tracer};
+use opentelemetry::{global, Context, KeyValue};
+use rdkafka::message::{Header, Headers, OwnedHeaders, ToBytes};
 use rdkafka::producer::future_producer::OwnedDeliveryResult;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rust_rdkafka::TheMessage;
 use rust_rdkafka::{create_producer, setup_opentelemetry};
 use text_io::read;
 use tracing::info;
+
 const TOPIC: &str = "topic-test";
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -39,7 +43,6 @@ async fn main() {
     }
 }
 
-#[tracing::instrument]
 pub async fn produce_number(verbose: bool, topic: &str, number: usize) {
     println!("span");
 
@@ -111,23 +114,48 @@ pub async fn produce_interactive(topic: &str) {
     }
 }
 
-#[tracing::instrument(skip(producer))]
 pub async fn deliver(
     producer: &FutureProducer,
     topic_name: &str,
     key: String,
     message: impl ToBytes + Debug,
 ) -> OwnedDeliveryResult {
+    let mut span = global::tracer("producer").start("message delivery to kafka");
+    span.set_attribute(KeyValue::new("topic", topic_name.to_owned()));
+    span.set_attribute(KeyValue::new("message", format!("{:?}", message)));
+    let context = Context::current_with_span(span);
+    let mut headers = OwnedHeaders::new();
+    global::get_text_map_propagator(|propagator| {
+        propagator.inject_context(&context, &mut HeaderInjector(&mut headers))
+    });
+
     producer
         .send(
             FutureRecord::to(topic_name)
                 .payload(&message)
                 .key(&key)
-                .headers(OwnedHeaders::new().insert(Header {
-                    key: "header_key",
-                    value: Some("header_value"),
-                })),
+                .headers(headers),
             Duration::from_secs(0),
         )
         .await
+}
+pub struct HeaderInjector<'a>(pub &'a mut OwnedHeaders);
+
+impl<'a> Injector for HeaderInjector<'a> {
+    fn set(&mut self, key: &str, value: String) {
+        let mut new = OwnedHeaders::new().insert(rdkafka::message::Header {
+            key,
+            value: Some(&value),
+        });
+
+        for header in self.0.iter() {
+            let s = String::from_utf8(header.value.unwrap().to_vec()).unwrap();
+            new = new.insert(rdkafka::message::Header {
+                key: header.key,
+                value: Some(&s),
+            });
+        }
+
+        self.0.clone_from(&new);
+    }
 }

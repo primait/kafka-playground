@@ -1,7 +1,10 @@
 use clap::{Parser, ValueEnum};
+use opentelemetry::propagation::Extractor;
+use opentelemetry::trace::{Span, Tracer};
+use opentelemetry::{global, Key, KeyValue, StringValue};
 use rdkafka::config::RDKafkaLogLevel;
 use rdkafka::consumer::{CommitMode, Consumer, StreamConsumer};
-use rdkafka::message::Headers;
+use rdkafka::message::{BorrowedHeaders, BorrowedMessage, Headers};
 use rdkafka::{ClientConfig, Message};
 use rust_rdkafka::setup_opentelemetry;
 use std::string::ToString;
@@ -12,7 +15,7 @@ const BROKERS: &str = "kafka";
 
 #[tokio::main]
 async fn main() {
-    setup_opentelemetry();
+    let _guard = setup_opentelemetry();
 
     let args: Args = Args::parse();
     info!("Args: {:?}", args);
@@ -60,38 +63,65 @@ async fn consume_and_print(
     loop {
         match consumer.recv().await {
             Err(e) => warn!("Kafka error: {}", e),
-            Ok(m) => {
-                let key = m
-                    .key()
-                    .and_then(|key| std::str::from_utf8(key).ok())
-                    .unwrap_or("no key");
-                let payload = m
-                    .payload_view::<str>()
-                    .unwrap_or(Ok("--"))
-                    .unwrap_or_else(|e| {
-                        warn!("Error while deserializing message payload: {:?}", e);
-                        ""
-                    });
-
-                if verbose {
-                    info!("key: '{}', payload: '{}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
-                      key, payload, m.topic(), m.partition(), m.offset(), m.timestamp());
-                } else {
-                    info!("key: '{}', payload: '{}'", key, payload);
-                }
-
-                if let Some(headers) = m.headers() {
-                    if !verbose {
-                        continue;
-                    }
-                    for header in headers.iter() {
-                        info!("  Header {:#?}: {:?}", header.key, header.value);
-                    }
-                }
-                consumer.commit_message(&m, CommitMode::Async).unwrap();
-            }
+            Ok(m) => consume_message(&consumer, m, verbose),
         };
     }
+}
+
+fn consume_message(consumer: &StreamConsumer, m: BorrowedMessage, verbose: bool) {
+    dbg!("consume_message");
+    let key = m
+        .key()
+        .and_then(|key| std::str::from_utf8(key).ok())
+        .unwrap_or("no key");
+    let payload = m
+        .payload_view::<str>()
+        .unwrap_or(Ok("--"))
+        .unwrap_or_else(|e| {
+            warn!("Error while deserializing message payload: {:?}", e);
+            ""
+        });
+
+    if let Some(headers) = m.headers() {
+        let context = global::get_text_map_propagator(|propagator| {
+            propagator.extract(&HeaderExtractor(&headers))
+        });
+        let mut span = global::tracer("consumer").start_with_context("consume_payload", &context);
+        span.set_attribute(KeyValue {
+            key: Key::new("payload"),
+            value: opentelemetry::Value::String(StringValue::from(payload.to_string())),
+        });
+        for header in headers.iter() {
+            if let Some(val) = header.value {
+                println!(
+                    "  Header {:#?}: {:?}",
+                    header.key,
+                    String::from_utf8(val.to_vec())
+                );
+            }
+        }
+        if verbose {
+            for header in headers.iter() {
+                info!("  Header {:#?}: {:?}", header.key, header.value);
+            }
+        }
+    }
+
+    if verbose {
+        info!(
+            "key: '{}', payload: '{}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
+            key,
+            payload,
+            m.topic(),
+            m.partition(),
+            m.offset(),
+            m.timestamp()
+        );
+    } else {
+        info!("key: '{}', payload: '{}'", key, payload);
+    }
+
+    consumer.commit_message(&m, CommitMode::Async).unwrap();
 }
 
 #[derive(Parser, Debug)]
@@ -125,5 +155,24 @@ impl ToString for OffsetReset {
             OffsetReset::Latest => "latest".to_string(),
             OffsetReset::Earliest => "earliest".to_string(),
         }
+    }
+}
+
+pub struct HeaderExtractor<'a>(pub &'a BorrowedHeaders);
+
+impl<'a> Extractor for HeaderExtractor<'a> {
+    fn get(&self, key: &str) -> Option<&str> {
+        for i in 0..self.0.count() {
+            if let Ok(val) = self.0.get_as::<str>(i) {
+                if val.key == key {
+                    return val.value;
+                }
+            }
+        }
+        None
+    }
+
+    fn keys(&self) -> Vec<&str> {
+        self.0.iter().map(|kv| kv.key).collect::<Vec<_>>()
     }
 }

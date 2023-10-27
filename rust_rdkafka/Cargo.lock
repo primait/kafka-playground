@@ -1248,6 +1248,7 @@ dependencies = [
  "clap",
  "env_logger",
  "log",
+ "opentelemetry",
  "prima-tracing",
  "rdkafka",
  "serde",
