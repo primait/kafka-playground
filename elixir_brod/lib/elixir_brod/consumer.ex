@@ -43,8 +43,15 @@ defmodule ElixirBrod.Consumer do
   def init(_group_id, init_data), do: {:ok, init_data}
 
   @impl :brod_group_subscriber_v2
-  def handle_message(kafka_message(value: value) = message, state) do
-    OpenTelemetry.Tracer.with_span :consume do
+  def handle_message(kafka_message(value: value, headers: headers) = message, state) do
+    :otel_propagator_text_map.extract(headers)
+    parent = OpenTelemetry.Tracer.current_span_ctx()
+
+    link = OpenTelemetry.link(parent)
+    
+    OpenTelemetry.Ctx.clear()
+    
+    OpenTelemetry.Tracer.with_span :consume, %{links: [link]} do
       OpenTelemetry.Tracer.with_span :internal do
         Logger.info("message consumed: #{inspect(message)}")
 
@@ -52,9 +59,9 @@ defmodule ElixirBrod.Consumer do
           @producer.produce_sync(
             :kafka_client,
             Keyword.fetch!(state, :destination_topic),
-            0,
+            :random,
             "",
-            value
+            %{value: value, headers: :otel_propagator_text_map.inject([])}
           )
         end
 

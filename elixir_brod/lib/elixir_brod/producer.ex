@@ -9,5 +9,6 @@ defmodule ElixirBrod.Producer do
               topic_name :: String.t(),
               partition_or_partition_function :: integer() | atom(),
               key :: String.t(),
-              value :: binary()) :: :ok | {:error, any()}
+              value :: iodata() | %{:value => iodata(), :headers => [{binary(), binary()}]}
+            ) :: :ok | {:error, any()}
 end
