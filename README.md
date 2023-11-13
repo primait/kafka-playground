@@ -1,73 +1,70 @@
-TODO:
-- [x] elixir consumer and producer
-- [x] rust consumer and producer
-- [x] python consumer and producer
-- [ ] Avro (or protobuf?)
-- [ ] schema registry naming strategies
-- [ ] code generation
-- [ ] auth (more than one set of credentials)
-- [ ] kafka containers
-- [ ] debug performance issues when running 3 containers?
-- [ ] spark?
-- [ ] events examples?
-- [ ] distributed tracing? datadog compatibility with follow_from?
-- [ ] encryption?
-- [ ] transactions? (consumers must use read_committed isolation level)
-- [ ] CI?
-- [ ] transactional outboxes? (before or after serialization?)
+# Kafka Playground
 
+## Overview
+Welcome to `kafka-playground`! This repository is a sandbox for exploring and understanding the integration of Apache Kafka with Elixir, Rust, and Python. It's part of an initiative to leverage Kafka as a company-wide integration events bus, focusing on creating examples, guidelines, and best practices. Our aim is to address potential integration challenges and to refine our event design approach.
 
-To implement a 'ring' we'll use a fake domain: a business car repair shop:
+### Context
+We've set up a hypothetical scenario involving a car repair shop to simulate real-world applications and data flows.
 
-ticketing system: elixir application - topic: tickets
+## Scenario: Car Repair Shop
 
-secretary: python application - topic: appointments
+### Components
+- **Ticketing System (Elixir)**: Manages repair tickets.
+- **Secretary (Python)**: Handles appointment scheduling.
+- **Cash Desk (Rust)**: Processes payments.
 
-cash desk: rust application - topic: payments
+### Kafka Topics
+- `tickets`: For the ticketing system.
+- `appointments`: For the secretary's scheduling tasks.
+- `payments`: For payment processing at the cash desk.
 
+### Events Flow
+1. **Ticketing System**
+   - `ticket_opened`
+2. **Secretary**
+   - `appointment_booked`
+3. **Cash Desk**
+   - `payment_registered`
+4. **Ticketing System**
+   - `ticket_closed`
 
-Events flow:
+## Event Structure
 
-1. ticketing system
-```yaml
-ticket_opened:
-    occurred_on: timestamp with time zone
-    ticket_id: uuid
-    requester:
-        email: email
-        name: string
-        middlename: optional[string]
-        surname: string
-        age: integer
-    repair_type: enum[windshield, bumper, body]
-```
+### Ticketing System
+- `ticket_opened`
+  - `occurred_on`: timestamp with time zone
+  - `ticket_id`: uuid
+  - `requester`:
+    - `email`: email
+    - `name`: string
+    - `middlename`: optional[string]
+    - `surname`: string
+    - `age`: integer
+  - `repair_type`: enum[windshield, bumper, body]
 
-2. secretary
-```yaml
-appointment_booked:
-    occured_on: timestamp with time zone
-    ticket_id: uuid
-    appointment_id: uuid
-    scheduled_at: timestamp with time zone
-```
+### Secretary
+- `appointment_booked`
+  - `occurred_on`: timestamp with time zone
+  - `ticket_id`: uuid
+  - `appointment_id`: uuid
+  - `scheduled_at`: timestamp with time zone
 
-3. cash desk
-```yaml
-payment_registered:
-   ticket_id: uuid
-   appointment_id: uuid
-   payment_id: uuid
-   occurred_on: timestamp with time zone
-   amount: decimal
-```
+### Cash Desk
+- `payment_registered`
+  - `ticket_id`: uuid
+  - `appointment_id`: uuid
+  - `payment_id`: uuid
+  - `occurred_on`: timestamp with time zone
+  - `amount`: decimal
 
-4. ticketing system
-```yaml
-ticket_closed:
-    occurred_on: timestamp with time zone
-    ticket_id: uuid
-```
+### Ticketing System
+- `ticket_closed`
+  - `occurred_on`: timestamp with time zone
+  - `ticket_id`: uuid
 
+## Getting Started
+
+[Instructions on how to clone, set up, and run the applications in this repository.]
 
 To produce a (text) message on a topic use this:
 
@@ -86,3 +83,23 @@ curl -s \
   ]
 }'
 ```
+
+## TODO
+- [ ] finish readme
+- [x] elixir consumer and producer
+- [x] rust consumer and producer
+- [x] python consumer and producer
+- [ ] events examples
+- [ ] avro (or protobuf?)
+- [ ] schema registry naming strategies
+- [ ] code generation
+- [ ] auth (more than one set of credentials)
+- [ ] kafka containers
+- [ ] debug performance issues when running 3 containers?
+- [ ] spark?
+- [ ] distributed tracing? datadog compatibility with follow_from?
+- [ ] encryption?
+- [ ] transactions? (consumers must use read_committed isolation level)
+- [ ] CI?
+- [ ] transactional outboxes? (before or after serialization?)
+- [ ] parallelism (multiple consumers and multiple consumers groups)
