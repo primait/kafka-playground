@@ -85,7 +85,7 @@ curl -s \
 ```
 
 ## TODO
-- [ ] finish readme
+- [ ] finish readme (add problems statement)
 - [x] elixir consumer and producer
 - [x] rust consumer and producer
 - [x] python consumer and producer
