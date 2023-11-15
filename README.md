@@ -103,3 +103,4 @@ curl -s \
 - [ ] CI?
 - [ ] transactional outboxes? (before or after serialization?)
 - [ ] parallelism (multiple consumers and multiple consumers groups)
+- [ ] idempotent consumers
