@@ -1,4 +1,0 @@
-Building and linking librdkafka statically
-Running command: "cp -a librdkafka/. /code/rust_rdkafka/target-docker/debug/build/rdkafka-sys-2de09550eccb8c11/out" in dir: .
-Running command: "/code/rust_rdkafka/target-docker/debug/build/rdkafka-sys-2de09550eccb8c11/out/configure --disable-ssl --disable-gssapi --disable-curl --disable-zstd --disable-lz4-ext" in dir: /code/rust_rdkafka/target-docker/debug/build/rdkafka-sys-2de09550eccb8c11/out
-Running command: "make libs" in dir: /code/rust_rdkafka/target-docker/debug/build/rdkafka-sys-2de09550eccb8c11/out
