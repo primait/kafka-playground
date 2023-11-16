@@ -78,6 +78,21 @@ files = [
 ]
 
 [[package]]
+name = "avro"
+version = "1.11.3"
+description = "Avro is a serialization and RPC framework."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "avro-1.11.3.tar.gz", hash = "sha256:3393bb5139f9cf0791d205756ce1e39a5b58586af5b153d6a3b5a199610e9d17"},
+]
+
+[package.extras]
+snappy = ["python-snappy"]
+zstandard = ["zstandard"]
+
+[[package]]
 name = "backoff"
 version = "2.2.1"
 description = "Function decoration for backoff and retry"
@@ -905,4 +920,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a86c4877ef276b4e885f282ea833f083fae70decc32115671e5617798df062d9"
+content-hash = "4a898ba1263221b0aad1f9dfb9072a463b8ab2f07d193f39c36c48b4ee358797"
