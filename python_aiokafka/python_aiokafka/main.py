@@ -4,6 +4,7 @@ import logging
 import os
 import uuid
 
+import avro.schema
 import primapy_tracing
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, TopicPartition
 from opentelemetry import context, propagate
@@ -53,6 +54,8 @@ class Getter:
 
 
 async def consume(source: str, destination: str):
+    schema = avro.schema.parse(open("../schemas/appointment_booked.avsc", "rb").read())
+
     logger = logging.getLogger(__name__)
 
     consumer_group_id = f"python-aiokafka-consumer-{source}"
