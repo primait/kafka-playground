@@ -1,0 +1,27 @@
+{
+  "type": "record",
+  "namespace": "secretary",
+  "name": "AppointmentBooked",
+  "fields": [
+    {
+      "name": "occurred_on",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    },
+    {
+      "name": "ticket_id",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "appointment_id",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "scheduled_at",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    }
+  ]
+}
