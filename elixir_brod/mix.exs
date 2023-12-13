@@ -13,7 +13,7 @@ defmodule ElixirBrod.MixProject do
   end
 
   def aliases, do: [start: ["deps.get", "run --no-halt"]]
-  
+
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
@@ -28,7 +28,11 @@ defmodule ElixirBrod.MixProject do
       {:brod, "~> 3.17.0"},
       {:opentelemetry, "~> 1.3.1"},
       {:opentelemetry_exporter, "~> 1.6.0"},
-      {:opentelemetry_api, "~> 1.2.2"}
+      {:opentelemetry_api, "~> 1.2.2"},
+      {:jason, "~> 1.4.1"},
+      {:decimal, "~> 2.0"},
+      {:uuid, "~> 1.1.8"},
+      {:timex, "~> 3.7.11"}
     ]
   end
 end

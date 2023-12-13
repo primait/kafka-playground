@@ -10,16 +10,16 @@ config :elixir_brod,
   destination_topic: System.fetch_env!("DESTINATION")
 
 config :opentelemetry, :processors,
-       otel_batch_processor: %{
-         exporter:
-           {:opentelemetry_exporter,
-            %{
-              endpoints: [
-                {:http, "jaeger", 55681, []}
-              ]
-            }}
-       }
+  otel_batch_processor: %{
+    exporter:
+      {:opentelemetry_exporter,
+       %{
+         endpoints: [
+           {:http, "jaeger", 55681, []}
+         ]
+       }}
+  }
 
 config :opentelemetry, :resource,
-       "deployment.environment": config_env(),
-       "service.name": "elixir_brod" 
+  "deployment.environment": config_env(),
+  "service.name": "elixir_brod"

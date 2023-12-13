@@ -1,0 +1,30 @@
+{
+  "name": "Requester",
+  "type": "record",
+  "namespace": "ticketing_system",
+  "fields": [
+    {
+      "name": "email",
+      "type": "string"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "middlename",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "surname",
+      "type": "string"
+    },
+    {
+      "name": "age",
+      "type": "int"
+    }
+  ]
+}

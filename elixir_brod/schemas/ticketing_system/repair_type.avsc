@@ -1,0 +1,12 @@
+{
+  "name": "RepairType",
+  "namespace": "ticketing_system",
+  "type": "enum",
+  "default": "unknown",
+  "symbols": [
+    "windshield",
+    "bumper",
+    "body",
+    "unknown"
+  ]
+}
