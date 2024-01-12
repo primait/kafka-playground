@@ -84,7 +84,6 @@ async def consume(source: str, destination: str):
             # to set the producer span as parent
             # context.attach(trace_context)
 
-
             links = []
             # to add a the producer span as a link
             if spans := list(trace_context):
