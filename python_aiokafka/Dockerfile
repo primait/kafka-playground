@@ -13,4 +13,4 @@ USER app
 
 WORKDIR /code
 
-CMD ["sh", "-c", "poetry install && poetry run python_aiokafka $SOURCE $DESTINATION"]
+CMD ["sh", "-c", "poetry install && poetry run python_aiokafka -s $SOURCE -d $DESTINATION"]
