@@ -1,4 +1,4 @@
-FROM public.ecr.aws/prima/elixir:1.14.2-5
+FROM public.ecr.aws/prima/elixir:1.15.7
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends g++
