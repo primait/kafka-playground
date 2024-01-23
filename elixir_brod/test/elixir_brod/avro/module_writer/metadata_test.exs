@@ -1,7 +1,6 @@
 defmodule ElixirBrod.Avro.ModuleWriter.MetadataTest do
-
   use ExUnit.Case
-  
+
   alias ElixirBrod.Avro.ModuleWriter.Metadata
   alias ElixirBrod.Avro.SchemaParser.Field
   alias ElixirBrod.Avro.SchemaParser.MessageEnum
@@ -16,13 +15,14 @@ defmodule ElixirBrod.Avro.ModuleWriter.MetadataTest do
     }
 
     module_content = Metadata.to_string(enum)
-    
+
     assert module_content =~ "defmodule ElixirBrod.TestSuite.TestEnum do"
     assert module_content =~ "@type t :: :test1 | :test2"
     assert module_content =~ "@values [:test1, :test2]"
     assert module_content =~ "def valid?"
 
-    assert {{:module, ElixirBrod.TestSuite.TestEnum, _, {:create, 1}}, []} = Code.eval_string(module_content)
+    assert {{:module, ElixirBrod.TestSuite.TestEnum, _, {:create, 1}}, []} =
+             Code.eval_string(module_content)
   end
 
   test "it should generate a Record module" do
@@ -52,9 +52,9 @@ defmodule ElixirBrod.Avro.ModuleWriter.MetadataTest do
         },
         %Field{
           name: "an array field",
-          type: :array, 
+          type: :array,
           items: [:null, :float]
-        }, 
+        },
         %Field{
           name: "a map field",
           type: :map,
@@ -76,11 +76,12 @@ defmodule ElixirBrod.Avro.ModuleWriter.MetadataTest do
     assert module_content =~ "another_field: float(),"
     assert module_content =~ "a_boolean: boolean(),"
     assert module_content =~ "a_union: nil | String.t(),"
-    assert module_content =~ "an_array_field: [nil | float()],"    
+    assert module_content =~ "an_array_field: [nil | float()],"
     assert module_content =~ "a_map_field: %{String.t() => nil | integer()},"
     assert module_content =~ "a_fixed_file: <<_::96>>"
 
-    assert {{:module, ElixirBrod.TestSuite.TestRecord, _, _}, []} = Code.eval_string(module_content)
+    assert {{:module, ElixirBrod.TestSuite.TestRecord, _, _}, []} =
+             Code.eval_string(module_content)
   end
 
   test "every logical type should be associated to a type" do
@@ -109,8 +110,8 @@ defmodule ElixirBrod.Avro.ModuleWriter.MetadataTest do
           name: "a_date",
           type: :integer,
           logical_type: :"timestamp-millis"
-        },
-      ] 
+        }
+      ]
     }
 
     module_content = Metadata.to_string(record)
@@ -121,7 +122,8 @@ defmodule ElixirBrod.Avro.ModuleWriter.MetadataTest do
     assert module_content =~ "another_decimal: Decimal.t(),"
     assert module_content =~ "a_date: DateTime.t()"
 
-    assert {{:module, ElixirBrod.TestSuite.TestRecordWithLogicalType, _, _}, []} = Code.eval_string(module_content)
+    assert {{:module, ElixirBrod.TestSuite.TestRecordWithLogicalType, _, _}, []} =
+             Code.eval_string(module_content)
   end
 
   test "it should generate a valid struct" do
@@ -145,32 +147,34 @@ defmodule ElixirBrod.Avro.ModuleWriter.MetadataTest do
           description: "a true description",
           type: :boolean
         }
-      ]}
-    
-    module_content = Metadata.to_string(record)
-    |> Code.format_string!()
-    |> to_string()
-    |> tap(& File.write!("/tmp/module.ex", &1))
+      ]
+    }
 
-    assert {{:module, ElixirBrod.TestSuite.TestValidRecord, _, _}, []} = Code.eval_string(module_content)
+    module_content =
+      Metadata.to_string(record)
+      |> Code.format_string!()
+      |> to_string()
+      |> tap(&File.write!("/tmp/module.ex", &1))
 
-    assert {:ok, _} = ElixirBrod.TestSuite.TestValidRecord.create(
-                        %{
-                          a_field: "a string",
-                          another_field: 22.1,
-                          a_boolean: true,
-                          a_date: ~U[1970-01-01 23:59:00Z],
-                          a_union: nil,
-                          an_array_field: [nil, 0.1]
-                        })
+    assert {{:module, ElixirBrod.TestSuite.TestValidRecord, _, _}, []} =
+             Code.eval_string(module_content)
 
-    
-    assert {:error, _} = ElixirBrod.TestSuite.TestValidRecord.create(
-                        %{
-                          a_field: "a string",
-                          another_field: "dunno",
-                          a_boolean: true,
-                          a_date: ~U[1970-01-01 23:59:00Z],
-                        })
+    assert {:ok, _} =
+             ElixirBrod.TestSuite.TestValidRecord.create(%{
+               a_field: "a string",
+               another_field: 22.1,
+               a_boolean: true,
+               a_date: ~U[1970-01-01 23:59:00Z],
+               a_union: nil,
+               an_array_field: [nil, 0.1]
+             })
+
+    assert {:error, _} =
+             ElixirBrod.TestSuite.TestValidRecord.create(%{
+               a_field: "a string",
+               another_field: "dunno",
+               a_boolean: true,
+               a_date: ~U[1970-01-01 23:59:00Z]
+             })
   end
 end

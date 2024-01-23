@@ -18,17 +18,17 @@ defmodule ElixirBrod.Avro.Type.Duration do
         }
 
   @enforce_keys [:month, :days, :millis]
-  defstruct [month: 0, days: 0, millis: 0]
+  defstruct month: 0, days: 0, millis: 0
 
   def apply_to(%__MODULE__{millis: ms}, %Time{} = time),
-      do: Timex.shift(time, milliseconds: ms)
+    do: Timex.shift(time, milliseconds: ms)
 
   def apply_to(%__MODULE__{month: m, days: d, millis: ms}, %Date{} = date),
-      do: Timex.shift(date, months: m, days: d, milliseconds: ms)
+    do: Timex.shift(date, months: m, days: d, milliseconds: ms)
 
   def apply_to(%__MODULE__{month: m, days: d, millis: ms}, %NaiveDateTime{} = date),
-      do: Timex.shift(date, months: m, days: d, milliseconds: ms)
+    do: Timex.shift(date, months: m, days: d, milliseconds: ms)
 
   def apply_to(%__MODULE__{month: m, days: d, millis: ms}, %DateTime{} = date),
-      do: Timex.shift(date, months: m, days: d, milliseconds: ms)
+    do: Timex.shift(date, months: m, days: d, milliseconds: ms)
 end
