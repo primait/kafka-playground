@@ -73,6 +73,15 @@ defmodule ElixirBrod.Avro.SchemaParser.Field do
     fields: []
   ]
 
+  @spec parse_field!(map) :: Field.t() | no_return()
+  def parse_field!(map) do
+    case parse_field(map) do
+      {:ok, res} -> res
+      {:error, error} -> raise error
+      {:error, field, error} -> raise "Not able to parse field #{field}. #{error}"
+    end
+  end
+
   @spec parse_field(map) ::
           {:ok, Field.t()} | {:error, String.t(), String.t()} | {:error, String.t()}
   def parse_field(%{"type" => type, "name" => _} = definition),
