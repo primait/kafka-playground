@@ -11,7 +11,7 @@ defmodule ElixirBrod.Avro.SchemaParser do
   @doc """
   Turn an avsc into a module metadata
   """
-  @spec parse(String.t(), String.t()) :: String.t()
+  @spec parse(String.t(), String.t()) :: {:ok, Metadata.t()} | {:error, :invalid_definition}
   def parse(schema, base_path) do
     schema
     |> Jason.decode!()
