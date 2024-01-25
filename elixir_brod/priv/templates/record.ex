@@ -26,7 +26,7 @@ defmodule <%= ElixirBrod.Avro.ModuleWriter.Conventions.fully_qualified_module_na
   @spec create(data :: map()) :: {:ok, t()} | {:error, any()}
   def create(data),
     do: data
-    |> then(&struct(__MODULE__, &1))
+    |> then(&ElixirBrod.Utils.Struct.transform(__MODULE__, &1))
     |> validate()
 
   @spec validate(t()) :: {:ok, t()} | {:error, any()}
