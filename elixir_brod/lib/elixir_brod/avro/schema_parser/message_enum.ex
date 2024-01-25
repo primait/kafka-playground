@@ -12,11 +12,11 @@ defmodule ElixirBrod.Avro.SchemaParser.MessageEnum do
           default: nil | atom(),
           name: String.t(),
           namespace: String.t(),
-          path: String.t(),
+          base_path: String.t(),
           symbols: [atom()]
         }
 
-  defstruct [:has_default?, :default, :name, :namespace, :path, :symbols]
+  defstruct [:has_default?, :default, :name, :namespace, :base_path, :symbols]
 
   @spec from_definition(map, Path.t()) :: {:ok, t} | {:error, :invalid_definition}
   def from_definition(
@@ -42,7 +42,7 @@ defmodule ElixirBrod.Avro.SchemaParser.MessageEnum do
        default: default,
        name: name,
        namespace: namespace,
-       path: generate_path!(base_path, name, namespace),
+       base_path: base_path,
        symbols: parse_symbols([Map.get(definition, "default") | symbols])
      }}
   end

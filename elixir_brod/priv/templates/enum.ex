@@ -1,7 +1,7 @@
-defmodule <%= ElixirBrod.Avro.ModuleWriter.Conventions.fully_qualified_module_name(metadata.path) %> do
-  
+defmodule <%= ElixirBrod.Avro.ModuleWriter.Conventions.fully_qualified_module_name(metadata) %> do
+
   @moduledoc """
-  _*Please note: This form was generated automatically through a task, it
+  _*Please note: This module was generated automatically through a task, it
   makes no sense to make changes here, but you should directly modify
   the avro file from which it was generated.*_
 
@@ -23,14 +23,14 @@ defmodule <%= ElixirBrod.Avro.ModuleWriter.Conventions.fully_qualified_module_na
 
   def create(value) when is_binary(value) do
     value = String.to_existing_atom(value)
-    if value in @values, do: {:ok, value}, else: {:error, :invalid} 
+    if value in @values, do: {:ok, value}, else: {:error, :invalid}
   rescue
      _ ->
        {:error, :invalid}
   end
 
 <%= if metadata.default do %>
-  @spec default :: t    
+  @spec default :: t
   def default, do: <%= inspect metadata.default %>
 <% end %>
 end

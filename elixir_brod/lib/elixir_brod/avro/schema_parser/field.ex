@@ -14,7 +14,7 @@ defmodule ElixirBrod.Avro.SchemaParser.Field do
           | :string
 
   @type field_type ::
-          field_primitive_type | :array | :enum | :fixed | :map | :record | [field_type]
+          field_primitive_type | :array | :enum | :fixed | :map | :record | {:reference, String.t()} | [field_type]
 
   @type logical_type ::
           :"local-timestamp-micros"
@@ -393,8 +393,13 @@ defmodule ElixirBrod.Avro.SchemaParser.Field do
     end
   end
 
-  defp apply_strategy(_, %{"name" => name} = definition),
-    do: {:error, name, "Malformed definition\n\n#{inspect(definition)}"}
+  defp apply_strategy(type, %{"name" => name}) do
+    {:ok,
+     %__MODULE__{
+       name: name,
+       type: {:reference, type}
+     }}
+  end
 
   @spec parse_item(map) :: {:ok, atom} | {:ok, t} | {:error, message :: String.t()}
   defp parse_item(item) when item in @primitive_types,

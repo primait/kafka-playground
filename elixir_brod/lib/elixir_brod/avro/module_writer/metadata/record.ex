@@ -48,53 +48,61 @@ defimpl ElixirBrod.Avro.ModuleWriter.Metadata, for: ElixirBrod.Avro.SchemaParser
     trim: true
   )
 
-  @spec parse_field_type(atom()) :: String.t()
-  defp parse_field_type(%Field{name: name, type: type} = field),
-    do: "#{String.replace(name, ~r/\s/, "_")}: #{elixir_type_from_avro_field(type, field)}"
+  @spec parse_field_type(atom(), base_path :: String.t()) :: String.t()
+  defp parse_field_type(%Field{name: name, type: type} = field, base_path),
+    do: "#{String.replace(name, ~r/\s/, "_")}: #{elixir_type_from_avro_field(type, field, base_path)}"
 
-  defp elixir_type_from_avro_field(_type, %Field{logical_type: logical})
+  defp elixir_type_from_avro_field(_type, %Field{logical_type: logical}, _base_path)
        when logical in @logical_types,
        do: "#{Map.fetch!(@logical_type_map, logical)}"
 
-  defp elixir_type_from_avro_field(type, _field) when type in @primitive_types,
+  defp elixir_type_from_avro_field(type, _field, _base_path) when type in @primitive_types,
     do: "#{Map.fetch!(@primitive_type_map, type)}"
 
-  defp elixir_type_from_avro_field(types, field) when is_list(types) do
+  defp elixir_type_from_avro_field(types, field, base_path) when is_list(types) do
     types
-    |> Enum.map(&elixir_type_from_avro_field(&1, field))
+    |> Enum.map(&elixir_type_from_avro_field(&1, field, base_path))
     |> Enum.join(" | ")
   end
 
-  defp elixir_type_from_avro_field(:array, %Field{items: items}) do
+  defp elixir_type_from_avro_field(:array, %Field{items: items}, base_path) do
     types =
       items
-      |> Enum.map(&elixir_type_from_avro_field(&1, nil))
+      |> Enum.map(&elixir_type_from_avro_field(&1, nil, base_path))
       |> Enum.join(" | ")
 
     "[#{types}]"
   end
 
-  defp elixir_type_from_avro_field(:map, %Field{items: items}) do
+  defp elixir_type_from_avro_field(:map, %Field{items: items}, base_path) do
     types =
       items
-      |> Enum.map(&elixir_type_from_avro_field(&1, nil))
+      |> Enum.map(&elixir_type_from_avro_field(&1, nil, base_path))
       |> Enum.join(" | ")
 
     "%{String.t() => #{types}}"
   end
 
-  defp elixir_type_from_avro_field(:fixed, %Field{size: size}),
+  defp elixir_type_from_avro_field(:fixed, %Field{size: size}, _base_path),
     do: "<<_::#{size * 8}>>"
 
-  defp elixir_type_from_avro_field(%Field{name: name}, _field),
+  defp elixir_type_from_avro_field({:reference, reference}, %Field{}, base_path) do
+    namespace = Path.rootname(reference)
+    name = reference |> Path.extname() |> String.trim_leading(".")
+
+    "#{base_path |> generate_path!(name, namespace) |> fully_qualified_module_name()}.t()"
+  end
+
+  defp elixir_type_from_avro_field(%Field{name: name}, _field, _base_path),
     do: String.replace(name, ~r/\s/, "_")
 
   defp validate(%Field{name: name, type: type} = definition) when type in @simple_types,
     do:
       "ElixirBrod.Avro.Validation.Simple.validate(#{inspect(String.to_existing_atom(name))}, #{inspect(definition)})"
 
-  defp validate(%Field{name: name, type: type} = definition)
-       when type in @complex_types or is_list(type),
+  # TODO for now instead of matching on complex types we just put a match all, since we are
+  # missing inline record and inline enum and references
+  defp validate(%Field{name: name, type: type} = definition),
        do:
          "ElixirBrod.Avro.Validation.Complex.validate(#{inspect(String.to_existing_atom(name))}, #{inspect(definition)})"
 end

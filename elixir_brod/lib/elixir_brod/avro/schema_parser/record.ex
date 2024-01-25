@@ -12,11 +12,11 @@ defmodule ElixirBrod.Avro.SchemaParser.Record do
           name: String.t(),
           description: nil | String.t(),
           namespace: String.t(),
-          path: String.t(),
+          base_path: String.t(),
           fields: [Field.t()]
         }
 
-  defstruct [:name, :namespace, :path, :fields, :description]
+  defstruct [:name, :namespace, :base_path, :fields, :description]
 
   @spec from_definition(map(), Path.t()) :: {:ok, t} | {:error, :invalid_definition}
   def from_definition(
@@ -32,7 +32,7 @@ defmodule ElixirBrod.Avro.SchemaParser.Record do
        name: name,
        namespace: namespace,
        description: Map.get(definition, "description"),
-       path: generate_path!(base_path, name, namespace),
+       base_path: base_path,
        fields: parse_fields!(fields)
      }}
   end
@@ -41,5 +41,5 @@ defmodule ElixirBrod.Avro.SchemaParser.Record do
 
   @spec parse_fields!([map()]) :: [Field.t()] | no_return()
   defp parse_fields!(field_definitions),
-    do: Enum.map(field_definitions, &Field.parse_field/1)
+    do: Enum.map(field_definitions, &Field.parse_field!/1)
 end
