@@ -63,6 +63,22 @@ defmodule ElixirBrod.Avro.Validation.Simple do
   def get_validator(%Field{logical_type: :duration}),
     do: &match?(%ElixirBrod.Avro.Type.Duration{}, &1)
 
+  def get_validator(%Field{type: :boolean}), do: &is_boolean/1
+
+  def get_validator(%Field{type: :bytes}), do: &is_binary/1
+
+  def get_validator(%Field{type: :double}), do: &is_avro_double/1
+
+  def get_validator(%Field{type: :float}), do: &is_avro_float/1
+
+  def get_validator(%Field{type: :int}), do: &is_avro_int/1
+
+  def get_validator(%Field{type: :long}), do: &is_avro_long/1
+
+  def get_validator(%Field{type: :null}), do: &is_nil/1
+
+  def get_validator(%Field{type: :string}), do: &String.valid?/1
+
   def get_validator(:boolean), do: &is_boolean/1
 
   def get_validator(:bytes), do: &is_binary/1

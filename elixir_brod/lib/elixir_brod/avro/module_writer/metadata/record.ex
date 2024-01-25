@@ -35,10 +35,10 @@ defimpl ElixirBrod.Avro.ModuleWriter.Metadata, for: ElixirBrod.Avro.SchemaParser
 
   @simple_types @primitive_types ++ @logical_types
 
-  @complex_types [
-    :array,
-    :map
-  ]
+  # @complex_types [
+  #   :array,
+  #   :map
+  # ]
 
   EEx.function_from_file(
     :def,
@@ -102,7 +102,7 @@ defimpl ElixirBrod.Avro.ModuleWriter.Metadata, for: ElixirBrod.Avro.SchemaParser
 
   # TODO for now instead of matching on complex types we just put a match all, since we are
   # missing inline record and inline enum and references
-  defp validate(%Field{name: name, type: type} = definition),
+  defp validate(%Field{name: name} = definition),
        do:
          "ElixirBrod.Avro.Validation.Complex.validate(#{inspect(String.to_existing_atom(name))}, #{inspect(definition)})"
 end

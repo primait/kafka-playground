@@ -5,8 +5,6 @@ defmodule ElixirBrod.Avro.SchemaParser.MessageEnum do
   representing the metadata to implement an enum module.
   """
 
-  import ElixirBrod.Avro.ModuleWriter.Conventions
-
   @type t :: %__MODULE__{
           has_default?: boolean(),
           default: nil | atom(),

@@ -4,8 +4,6 @@ defmodule ElixirBrod.Avro.SchemaParser.Record do
   metadata to create a record-type module.
   """
 
-  import ElixirBrod.Avro.ModuleWriter.Conventions
-
   alias ElixirBrod.Avro.SchemaParser.Field
 
   @type t :: %__MODULE__{
