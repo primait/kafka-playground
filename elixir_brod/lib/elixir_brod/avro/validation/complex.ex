@@ -59,6 +59,12 @@ defmodule ElixirBrod.Avro.Validation.Complex do
 
   def get_validator(%Field{type: types}) when is_list(types), do: validate_element(types)
 
+  # TODO for now we just put a match all, since we are
+  # missing inline record and inline enum and references
+  def get_validator(_) do
+    fn _ -> true end
+  end
+
   defp validate_element(items) do
     Enum.reduce(
       items,
