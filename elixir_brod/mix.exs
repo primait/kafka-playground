@@ -25,6 +25,7 @@ defmodule ElixirBrod.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:avrora, "~> 0.27"},
       {:brod, "~> 3.17.0"},
       {:opentelemetry, "~> 1.3.1"},
       {:opentelemetry_exporter, "~> 1.6.0"},
@@ -32,7 +33,8 @@ defmodule ElixirBrod.MixProject do
       {:jason, "~> 1.4.1"},
       {:decimal, "~> 2.0"},
       {:uuid, "~> 1.1.8"},
-      {:timex, "~> 3.7.11"}
+      {:timex, "~> 3.7.11"},
+      {:snappyer, "~> 1.2.9", override: true}
     ]
   end
 end
