@@ -27,6 +27,7 @@ defmodule ElixirBrod.MixProject do
     [
       {:avrora, "~> 0.27"},
       {:brod, "~> 3.17.0"},
+      {:erlavro, "~> 2.9"},
       {:opentelemetry, "~> 1.3.1"},
       {:opentelemetry_exporter, "~> 1.6.0"},
       {:opentelemetry_api, "~> 1.2.2"},

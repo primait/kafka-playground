@@ -34,16 +34,16 @@ defmodule ElixirBrod.Avro.Validation.Simple do
   end
 
   def get_validator(%Field{logical_type: :"local-timestamp-micros"}),
-    do: &is_avro_long/1
+    do: fn _ -> true end
 
   def get_validator(%Field{logical_type: "local-timestamp-millis"}),
-    do: &is_avro_long/1
+    do: fn _ -> true end
 
   def get_validator(%Field{logical_type: :"timestamp-micros"}),
-    do: &is_avro_long/1
+    do: fn _ -> true end
 
   def get_validator(%Field{logical_type: :"timestamp-millis"}),
-    do: &is_avro_long/1
+    do: fn _ -> true end
 
   def get_validator(%Field{logical_type: :"time-micros"}),
     do: &(is_avro_long(&1) && &1 >= 0)
