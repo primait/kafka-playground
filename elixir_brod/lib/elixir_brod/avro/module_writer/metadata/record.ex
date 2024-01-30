@@ -86,6 +86,10 @@ defimpl ElixirBrod.Avro.ModuleWriter.Metadata, for: ElixirBrod.Avro.SchemaParser
   defp elixir_type_from_avro_field(:fixed, %Field{size: size}, _base_path),
     do: "<<_::#{size * 8}>>"
 
+  defp elixir_type_from_avro_field({:record, namespace}, %Field{name: name}, base_path) do
+    "#{base_path |> generate_path!(name, namespace) |> fully_qualified_module_name()}.t()"
+  end
+
   defp elixir_type_from_avro_field({:reference, reference}, %Field{}, base_path) do
     namespace = Path.rootname(reference)
     name = reference |> Path.extname() |> String.trim_leading(".")

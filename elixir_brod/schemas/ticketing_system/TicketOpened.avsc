@@ -1,0 +1,47 @@
+{
+    "type": "record",
+    "namespace": "ticketing_system",
+    "name": "TicketOpened",
+    "fields": [
+        {
+            "name": "ticket_id",
+            "type": "string",
+            "logicalType": "uuid"
+        },
+        {
+            "name": "occured_on",
+            "type": "long",
+            "logicalType": "timestamp-millis"
+        },
+        {
+            "name": "requester",
+            "type": "record",
+            "namespace": "ticketing_system",
+            "fields": [
+                {
+                    "name": "email",
+                    "type": "string"
+                },
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "name": "middlename",
+                    "type": [
+                        "null",
+                        "string"
+                    ]
+                },
+                {
+                    "name": "surname",
+                    "type": "string"
+                },
+                {
+                    "name": "age",
+                    "type": "int"
+                }
+            ]
+        }
+    ]
+}

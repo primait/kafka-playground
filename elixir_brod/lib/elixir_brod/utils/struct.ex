@@ -15,6 +15,7 @@ defmodule ElixirBrod.Utils.Struct do
   end
 
   def transform(schema, attrs) do
+    IO.inspect(attrs, label: "attr")
     struct = struct(schema.__struct__)
 
     Enum.reduce(Map.to_list(struct), struct, fn {k, _}, acc ->

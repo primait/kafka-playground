@@ -14,7 +14,7 @@ defmodule ElixirBrod.Avro.SchemaParser.Field do
           | :string
 
   @type field_type ::
-          field_primitive_type | :array | :enum | :fixed | :map | :record | {:reference, String.t()} | [field_type]
+          field_primitive_type | :array | :enum | :fixed | :map | {:record, String.t()} | {:reference, String.t()} | [field_type]
 
   @type logical_type ::
           :"local-timestamp-micros"
@@ -364,7 +364,7 @@ defmodule ElixirBrod.Avro.SchemaParser.Field do
     end
   end
 
-  defp apply_strategy("record", %{"name" => name, "fields" => fields} = definition) do
+  defp apply_strategy("record", %{"name" => name, "fields" => fields, "namespace" => namespace} = definition) do
     case extract_default_for("record", definition) do
       {:ok, default} ->
         fields =
@@ -383,7 +383,7 @@ defmodule ElixirBrod.Avro.SchemaParser.Field do
              %__MODULE__{
                name: name,
                default: default,
-               type: :record,
+               type: {:record, namespace},
                fields: fields
              }}
         end

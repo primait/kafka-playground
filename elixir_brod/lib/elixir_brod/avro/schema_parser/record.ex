@@ -37,6 +37,12 @@ defmodule ElixirBrod.Avro.SchemaParser.Record do
 
   def from_definition(_, _), do: {:error, :invalid_definition}
 
+  def from_field(%Field{type: {:record, namespace}, fields: fields, name: name, description: description}, base_path) do
+    %__MODULE__{name: name, namespace: namespace, description: description, base_path: base_path, fields: fields}
+  end
+
+  def from_field(_), do: {:error, :not_a_record}
+
   @spec parse_fields!([map()]) :: [Field.t()] | no_return()
   defp parse_fields!(field_definitions),
     do: Enum.map(field_definitions, &Field.parse_field!/1)
