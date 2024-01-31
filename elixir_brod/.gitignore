@@ -24,3 +24,6 @@ elixir_brod-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# iex local setup
+.iex.exs

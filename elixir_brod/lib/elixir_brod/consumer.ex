@@ -48,9 +48,9 @@ defmodule ElixirBrod.Consumer do
     parent = OpenTelemetry.Tracer.current_span_ctx()
 
     link = OpenTelemetry.link(parent)
-    
+
     OpenTelemetry.Ctx.clear()
-    
+
     OpenTelemetry.Tracer.with_span :consume, %{links: [link]} do
       OpenTelemetry.Tracer.with_span :internal do
         Logger.info("message consumed: #{inspect(message)}")

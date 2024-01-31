@@ -10,7 +10,9 @@ defmodule ElixirBrod.Application do
        [
          Application.fetch_env!(:elixir_brod, :source_topic),
          Application.fetch_env!(:elixir_brod, :destination_topic)
-       ]}
+      ]},
+      ElixirBrod.KafkaClient,
+      Avrora
     ]
 
     opts = [strategy: :one_for_one, name: ElixirBrod.Supervisor]
