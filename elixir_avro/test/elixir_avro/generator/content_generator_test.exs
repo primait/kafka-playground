@@ -9,7 +9,7 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
                "Atp.Players.PlayerRegistered" => player_registered_module_content(),
                "Atp.Players.Trainer" => trainer_module_content()
              } ==
-              ContentGenerator.schema_content_to_modules_content(schema_content())
+               ContentGenerator.schema_content_to_modules_content(schema_content())
     end
   end
 
@@ -70,7 +70,31 @@ end
   end
 
   defp trainer_module_content() do
-    ""
+    ~S/defmodule Atp.Players.Trainer do
+  @moduledoc """
+  DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
+
+  A player trainer.
+
+  Fields:
+
+    `fullname`: Full name of the trainer.
+
+  """
+
+  use TypedStruct
+
+  typedstruct do
+    field :fullname, String.t(), enforce: true
+  end
+
+  def to_avro_map(%__MODULE__{} = r) do
+    %{
+      "fullname" => r.fullname
+    }
+  end
+end
+/
   end
 
   defp schema_content() do
@@ -123,9 +147,11 @@ end
               "fields": [
                   {
                       "name": "fullname",
-                      "type": "string"
+                      "type": "string",
+                      "doc": "Full name of the trainer."
                   }
-              ]
+              ],
+              "doc": "A player trainer."
           },
           "doc": "Current trainer."
         }

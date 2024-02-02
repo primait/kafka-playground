@@ -66,6 +66,16 @@ defmodule ElixirAvro.Generator.Typedstruct do
 
   def spec_for(
         {:avro_record_field, _name, _doc,
+         fullname,
+         _default, _ordering, _aliases}
+      ) when is_binary(fullname) do
+    # eg: fullname=atp.players.Trainer
+    "#{camelize(fullname)}.t(), enforce: true"
+  end
+
+  # can we delete it?
+  def spec_for(
+        {:avro_record_field, _name, _doc,
          {:avro_record_type, _record_name, _record_namespace, _record_doc, _record_aliases, _fields, fullname, _custom},
          _default, _ordering, _aliases}
       ) do

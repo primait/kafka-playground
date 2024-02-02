@@ -1,8 +1,8 @@
-defmodule Atp.Players.PlayerRegistered do
+defmodule <%= module_name %> do
   @moduledoc """
   DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
 
-  A new player is registered in the atp ranking system.
+  <%= moduledoc %>
 
   Fields:
   <%= for field <- fields_meta do %>
