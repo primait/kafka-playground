@@ -2,6 +2,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
   use ExUnit.Case
 
   describe "happy path" do
+    @tag :avrora_discovery
     test "starting with a map with string keys" do
       player_registered = %{
         "player_id" => "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -26,6 +27,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
                )
     end
 
+    @tag :avrora_discovery
     test "starting from a map with atom keys" do
       player_registered = %{
         player_id: "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -53,6 +55,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
       defstruct [:name, :year, :surface]
     end
 
+    @tag :avrora_discovery
     test "starting from a struct" do
       player_registered = %PlayerRegistered{
         player_id: "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -80,6 +83,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
   end
 
   describe "ignores additional field that are not in the schema" do
+    @tag :avrora_discovery
     test "string keys, adding birthday" do
       player_registered = %{
         "player_id" => "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -110,6 +114,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
       ]
     end
 
+    @tag :avrora_discovery
     test "struct with additional fields" do
       player_registered = %PlayerRegisteredWithAdditionalFields{
         player_id: "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -130,6 +135,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
   end
 
   describe "encode: breaking the contract defined by the schema on logical types" do
+    @tag :avrora_discovery
     test "not a uuid as expected, it still succeed because avro doesn't validate logical types right now" do
       player_registered = %{
         "player_id" => "123",
@@ -148,6 +154,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
   end
 
   describe "encode: breaking the contract defined by the schema on primitive types" do
+    @tag :avrora_discovery
     test "passing a long instead of an integer for rank" do
       player_registered = %{
         "player_id" => "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -174,6 +181,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
              }
     end
 
+    @tag :avrora_discovery
     test "passing a string instead of an integer for registration_date" do
       player_registered = %{
         "player_id" => "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -201,6 +209,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
              }
     end
 
+    @tag :avrora_discovery
     test "passing nil instead of an string for full_name" do
       player_registered = %{
         "player_id" => "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -227,6 +236,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
              }
     end
 
+    @tag :avrora_discovery
     test "not passing an optional field" do
       player_registered = %{
         "player_id" => "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -249,6 +259,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
                 }}
     end
 
+    @tag :avrora_discovery
     # does it break the same for violations in inline records?
     test "inline record: passing a string for year in slam" do
       player_registered = %{
@@ -285,6 +296,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
   end
 
   describe "encode: breaking the contract defined by the schema on enum type" do
+    @tag :avrora_discovery
     test "enum in inline record has an invalid value" do
       player_registered = %{
         "player_id" => "a0197acb-2829-42a1-9ac2-b327b62df214",
@@ -317,6 +329,7 @@ defmodule ElixirAvro.AvroraDiscovery.GeneralEncodingTest do
   end
 
   describe "encode: breaking the contract defined by the schema on array type" do
+    @tag :avrora_discovery
     test "array field as string value" do
       player_registered = %{
         "player_id" => "a0197acb-2829-42a1-9ac2-b327b62df214",

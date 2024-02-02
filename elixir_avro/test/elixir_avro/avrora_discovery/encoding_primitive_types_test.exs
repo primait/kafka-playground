@@ -2,6 +2,7 @@ defmodule ElixirAvro.AvroraDiscovery.EncodingPrimitiveTypesTest do
   use ExUnit.Case
 
   describe "boolean" do
+    @tag :avrora_discovery
     test "valid" do
       assert {:ok, _} =
                ElixirAvro.AvroraClient.encode(%{"active" => true},
@@ -9,6 +10,7 @@ defmodule ElixirAvro.AvroraDiscovery.EncodingPrimitiveTypesTest do
                )
     end
 
+    @tag :avrora_discovery
     test "invalid" do
       assert ElixirAvro.AvroraClient.encode(%{"active" => "true"},
                schema_name: "types.primitive.Boolean"
@@ -25,6 +27,7 @@ defmodule ElixirAvro.AvroraDiscovery.EncodingPrimitiveTypesTest do
              }
     end
 
+    @tag :avrora_discovery
     test "encode/decode" do
       message = %{"active" => true}
       {:ok, binary} =

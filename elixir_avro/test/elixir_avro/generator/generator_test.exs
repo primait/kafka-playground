@@ -1,16 +1,19 @@
-defmodule ElixirAvro.GeneratorTest do
+defmodule ElixirAvro.Generator.ContentGeneratorTest do
   use ExUnit.Case
 
-  alias ElixirAvro.Generator.Generator
+  alias ElixirAvro.Generator.ContentGenerator
 
   describe "generate module" do
-    test "two primitive fields" do
-      assert module_content_two_primitive_fields() ==
-               Generator.schema_content_to_module_content(schema_content_two_primitive_fields())
+    test "inline record" do
+      assert %{
+               "Atp.Players.PlayerRegistered" => player_registered_module_content(),
+               "Atp.Players.Trainer" => trainer_module_content()
+             } ==
+              ContentGenerator.schema_content_to_modules_content(schema_content())
     end
   end
 
-  defp module_content_two_primitive_fields() do
+  defp player_registered_module_content() do
     ~S/defmodule Atp.Players.PlayerRegistered do
   @moduledoc """
   DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
@@ -30,6 +33,8 @@ defmodule ElixirAvro.GeneratorTest do
 
     `sponsor_name`: The name of the current sponsor (optional).
 
+    `trainer`: Current trainer.
+
   """
 
   use TypedStruct
@@ -40,6 +45,7 @@ defmodule ElixirAvro.GeneratorTest do
     field :rank, integer(), enforce: true
     field :registration_date, Date.t(), enforce: true
     field :sponsor_name, String.t()
+    field :trainer, Atp.Players.Trainer.t(), enforce: true
   end
 
   def to_avro_map(%__MODULE__{} = r) do
@@ -48,14 +54,26 @@ defmodule ElixirAvro.GeneratorTest do
       "full_name" => r.full_name,
       "rank" => r.rank,
       "registration_date" => Date.to_iso8601(r.registration_date),
-      "sponsor_name" => r.sponsor_name
+      "sponsor_name" => r.sponsor_name,
+      "trainer" =>
+        case r.trainer do
+          %Atp.Players.Trainer{} ->
+            Atp.Players.Trainer.to_avro_map(r.trainer)
+
+          _ ->
+            raise "Invalid type for r.trainer"
+        end
     }
   end
 end
 /
   end
 
-  defp schema_content_two_primitive_fields() do
+  defp trainer_module_content() do
+    ""
+  end
+
+  defp schema_content() do
     """
     {
       "doc": "A new player is registered in the atp ranking system.",
@@ -96,6 +114,20 @@ end
               "string"
           ],
           "doc": "The name of the current sponsor (optional)."
+        },
+        {
+          "name": "trainer",
+          "type": {
+              "name": "Trainer",
+              "type": "record",
+              "fields": [
+                  {
+                      "name": "fullname",
+                      "type": "string"
+                  }
+              ]
+          },
+          "doc": "Current trainer."
         }
       ]
     }

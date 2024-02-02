@@ -64,7 +64,24 @@ defmodule ElixirAvro.Generator.Typedstruct do
     |> Kernel.<>(append_spec)
   end
 
+  def spec_for(
+        {:avro_record_field, _name, _doc,
+         {:avro_record_type, _record_name, _record_namespace, _record_doc, _record_aliases, _fields, fullname, _custom},
+         _default, _ordering, _aliases}
+      ) do
+    # eg: fullname=atp.players.Trainer
+    "#{camelize(fullname)}.t(), enforce: true"
+  end
+
   defp get_spec_for_primitive(primitive_type) do
     Map.fetch!(@primitive_types_mapping, primitive_type)
+  end
+
+  # this is duplicated, put it in utils or something similar
+  defp camelize(fullname) do
+    fullname
+    |> String.split(".")
+    |> Enum.map(&:string.titlecase/1)
+    |> Enum.join(".")
   end
 end

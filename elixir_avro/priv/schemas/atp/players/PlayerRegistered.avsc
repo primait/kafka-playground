@@ -39,6 +39,19 @@
             "doc": "The name of the current sponsor (optional)."
         },
         {
+            "name": "trainer",
+            "type": {
+                "name": "Trainer",
+                "type": "record",
+                "fields": [
+                    {
+                        "name": "fullname",
+                        "type": "string"
+                    }
+                ]
+            }
+        },
+        {
             "name": "slams_won",
             "type": {
                 "type": "array",
