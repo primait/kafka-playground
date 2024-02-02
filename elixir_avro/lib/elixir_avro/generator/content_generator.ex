@@ -7,7 +7,7 @@ defmodule ElixirAvro.Generator.ContentGenerator do
     erlavro_schema_parsed = :avro_json_decoder.decode_schema(root_schema_content)
 
     erlavro_schema_parsed
-    |> ElixirAvro.Generator.Collector.collect()
+    |> ElixirAvro.Generator.TypesCollector.collect()
     |> Enum.map(fn {_fullname, erlavro_type} -> module_content(erlavro_type) end)
     |> Enum.into(%{})
   end

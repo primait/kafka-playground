@@ -1,4 +1,4 @@
-defmodule ElixirAvro.Generator.Collector do
+defmodule ElixirAvro.Generator.TypesCollector do
   # This is not pure, since it uses ets underneath,
   # but with some effort we can make it pure if we really want to.
   def collect(erlavro_schema_parsed) do

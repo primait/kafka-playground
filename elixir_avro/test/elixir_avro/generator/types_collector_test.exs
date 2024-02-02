@@ -1,7 +1,7 @@
-defmodule ElixirAvro.Generator.CollectorTest do
+defmodule ElixirAvro.Generator.TypesCollectorTest do
   use ExUnit.Case
 
-  alias ElixirAvro.Generator.Collector
+  alias ElixirAvro.Generator.TypesCollector
 
   @nested_record_full_name "atp.players.Trainer"
 
@@ -10,7 +10,7 @@ defmodule ElixirAvro.Generator.CollectorTest do
              "atp.players.PlayerRegistered" => erlavro_schema_parsed_root_condensed(),
              "atp.players.Trainer" => erlavro_schema_parsed_nested_record()
            } ==
-             Collector.collect(erlavro_schema_parsed_root_record())
+             TypesCollector.collect(erlavro_schema_parsed_root_record())
   end
 
   defp erlavro_schema_parsed_nested_record() do
@@ -50,8 +50,8 @@ defmodule ElixirAvro.Generator.CollectorTest do
            {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
          {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, :undefined, :ascending,
         []},
-       {:avro_record_field, "trainer", "Current trainer.", nested_record_type,
-        :undefined, :ascending, []}
+       {:avro_record_field, "trainer", "Current trainer.", nested_record_type, :undefined,
+        :ascending, []}
      ], "atp.players.PlayerRegistered", []}
   end
 end
