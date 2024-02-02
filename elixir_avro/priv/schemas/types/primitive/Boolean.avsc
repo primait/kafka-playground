@@ -1,0 +1,12 @@
+{
+    "type": "record",
+    "name": "Boolean",
+    "namespace": "types.primitive",
+    "fields": [
+        {
+            "name": "active",
+            "type": "boolean",
+            "doc": "Is active?"
+        }
+    ]
+}

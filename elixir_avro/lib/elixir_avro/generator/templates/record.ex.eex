@@ -1,0 +1,25 @@
+defmodule Atp.Players.PlayerRegistered do
+  @moduledoc """
+  DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
+
+  A new player is registered in the atp ranking system.
+
+  Fields:
+  <%= for field <- fields_meta do %>
+    <%= Excribe.format(String.trim("`#{field.name}`: #{field.doc}") <> "\n", %{hanging: 6, width: 80, indent: 0, align: :left}) %>
+  <% end %>
+  """
+
+  use TypedStruct
+
+  typedstruct do
+    <%= for field <- fields_meta do %>field :<%= field.name %>, <%= field.typedstruct_spec %>
+    <% end %>
+  end
+
+  def to_avro_map(%__MODULE__{} = r) do
+    %{
+      <%= fields_meta |> Enum.map(&~s/"#{&1.name}" => #{&1.to_avro_map_value}/) |> Enum.join(", ") %>
+    }
+  end
+end
