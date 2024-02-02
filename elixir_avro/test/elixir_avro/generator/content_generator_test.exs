@@ -6,14 +6,12 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
 
   alias ElixirAvro.Generator.ContentGenerator
 
-  describe "generate module" do
-    test "inline record" do
-      assert %{
-               "Atp.Players.PlayerRegistered" => player_registered_module_content(),
-               "Atp.Players.Trainer" => trainer_module_content()
-             } ==
-               ContentGenerator.modules_content_from_schema(schema())
-    end
+  test "inline record" do
+    assert %{
+             "Atp.Players.PlayerRegistered" => player_registered_module_content(),
+             "Atp.Players.Trainer" => trainer_module_content()
+           } ==
+             ContentGenerator.modules_content_from_schema(schema())
   end
 
   defp player_registered_module_content() do
