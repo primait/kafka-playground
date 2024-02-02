@@ -3,7 +3,7 @@ defmodule ElixirAvro.Generator.ContentGenerator do
 
   alias ElixirAvro.Generator.Typedstruct
 
-  def schema_content_to_modules_content(root_schema_content) do
+  def modules_content_from_schema(root_schema_content) do
     erlavro_schema_parsed = :avro_json_decoder.decode_schema(root_schema_content)
 
     erlavro_schema_parsed
