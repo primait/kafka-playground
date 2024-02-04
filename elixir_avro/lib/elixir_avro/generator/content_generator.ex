@@ -83,7 +83,7 @@ defmodule ElixirAvro.Generator.ContentGenerator do
          value_expression
        ) do
     # TODO evaluate if this could actually be a real elixir function
-    "Date.to_iso8601(#{value_expression})"
+    "Date.diff(#{value_expression}, ~D[1970-01-01])"
   end
 
   defp to_avro_map_value(

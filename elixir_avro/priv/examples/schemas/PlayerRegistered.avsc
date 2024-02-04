@@ -50,6 +50,45 @@
                     }
                 ]
             }
+        },
+        {
+            "name": "slams_won",
+            "type": {
+                "type": "array",
+                "items": {
+                    "type": "record",
+                    "name": "Slam",
+                    "namespace": "atp.tournaments",
+                    "fields": [
+                        {
+                            "name": "name",
+                            "type": "string",
+                            "doc": "The name of the slam."
+                        },
+                        {
+                            "name": "year",
+                            "type": "int",
+                            "doc": "The year the slam was won."
+                        },
+                        {
+                            "name": "surface",
+                            "type": {
+                                "type": "enum",
+                                "name": "Surface",
+                                "symbols": [
+                                    "CLAY",
+                                    "GRASS",
+                                    "HARD",
+                                    "CARPET",
+                                    "GREENSET"
+                                ],
+                                "doc": "The surface of the slam (e.g., clay, grass, hard, carpet)."
+                            }
+                        }
+                    ]
+                }
+            },
+            "doc": "List of slams won by the player."
         }
     ]
 }

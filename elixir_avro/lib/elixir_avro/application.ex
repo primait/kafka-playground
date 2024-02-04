@@ -9,7 +9,7 @@ defmodule ElixirAvro.Application do
       ElixirAvro.AvroraClient
     ]
 
-    opts = [strategy: :one_for_one, name: ElixirBrod.Supervisor]
+    opts = [strategy: :one_for_one, name: ElixirAvro.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

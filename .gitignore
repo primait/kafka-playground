@@ -5,3 +5,5 @@ rust_rdkafka/target-docker
 # vscode files
 .devcontainer
 .vscode
+
+**/generated/*

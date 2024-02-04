@@ -46,10 +46,13 @@
                 "fields": [
                     {
                         "name": "fullname",
-                        "type": "string"
+                        "type": "string",
+                        "doc": "Full name of the trainer."
                     }
-                ]
-            }
+                ],
+                "doc": "A player trainer."
+            },
+            "doc": "Current trainer."
         }
     ]
 }

@@ -37,7 +37,7 @@ defmodule Atp.Players.PlayerRegistered do
       "player_id" => r.player_id,
       "full_name" => r.full_name,
       "rank" => r.rank,
-      "registration_date" => Date.to_iso8601(r.registration_date),
+      "registration_date" => Date.diff(r.registration_date, ~D[1970-01-01]),
       "sponsor_name" => r.sponsor_name,
       "trainer" =>
         case r.trainer do
