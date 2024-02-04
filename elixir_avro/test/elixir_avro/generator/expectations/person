@@ -1,0 +1,28 @@
+defmodule Atp.Players.Info.Person do
+  @moduledoc """
+  DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
+
+
+
+  Fields:
+
+    `fullname`:
+
+    `age`:
+
+  """
+
+  use TypedStruct
+
+  typedstruct do
+    field :fullname, String.t(), enforce: true
+    field :age, integer(), enforce: true
+  end
+
+  def to_avro_map(%__MODULE__{} = r) do
+    %{
+      "fullname" => r.fullname,
+      "age" => r.age
+    }
+  end
+end

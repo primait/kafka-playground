@@ -1,0 +1,35 @@
+defmodule Atp.Players.Info.BirthInfo do
+  @moduledoc """
+  DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
+
+  Info about a player's birth.
+
+  Fields:
+
+    `birthday`:
+
+    `father`: Father's info.
+
+  """
+
+  use TypedStruct
+
+  typedstruct do
+    field :birthday, Date.t(), enforce: true
+    field :father, Atp.Players.Info.Person.t(), enforce: true
+  end
+
+  def to_avro_map(%__MODULE__{} = r) do
+    %{
+      "birthday" => Date.diff(r.birthday, ~D[1970-01-01]),
+      "father" =>
+        case r.father do
+          %Atp.Players.Info.Person{} ->
+            Atp.Players.Info.Person.to_avro_map(r.father)
+
+          _ ->
+            raise "Invalid type for r.father"
+        end
+    }
+  end
+end

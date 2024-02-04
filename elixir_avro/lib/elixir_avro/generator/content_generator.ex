@@ -105,27 +105,12 @@ defmodule ElixirAvro.Generator.ContentGenerator do
          value_expression
        )
        when is_binary(fullname) do
-    """
-    case #{value_expression} do
-      %#{camelize(fullname)}{} ->
-        #{camelize(fullname)}.to_avro_map(#{value_expression})
-      _ -> raise "Invalid type for #{value_expression}"
-    end
-    """
-  end
-
-  # can we delete this?
-  defp to_avro_map_value(
-         {:avro_record_type, _name, "", "", [], _fields, fullname, []},
-         value_expression
-       ) do
-    """
-    case #{value_expression} do
-      %#{camelize(fullname)}{} ->
-        #{camelize(fullname)}.to_avro_map(#{value_expression})
-      _ -> raise "Invalid type for #{value_expression}"
-    end
-    """
+    ~s/
+case #{value_expression} do
+  %#{camelize(fullname)}{} ->
+    #{camelize(fullname)}.to_avro_map(#{value_expression})
+  _ -> raise "Invalid type for #{value_expression}"
+end/
   end
 
   # this is duplicated, put it in utils or something similar

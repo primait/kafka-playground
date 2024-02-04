@@ -1,0 +1,63 @@
+defmodule Atp.Players.PlayerRegisteredTwoLevelsNestingRecords do
+  @moduledoc """
+  DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
+
+  A new player is registered in the atp ranking system.
+
+  Fields:
+
+    `player_id`: The unique identifier of the registered player (UUID).
+
+    `full_name`: The full name of the registered player.
+
+    `rank`: The current ranking of the registered player, start counting from 1.
+
+    `registration_date`: The date when the player was registered (number of UTC days
+      from the unix epoch).
+
+    `sponsor_name`: The name of the current sponsor (optional).
+
+    `trainer`: Current trainer.
+
+    `birth_info`:
+
+  """
+
+  use TypedStruct
+
+  typedstruct do
+    field :player_id, String.t(), enforce: true
+    field :full_name, String.t(), enforce: true
+    field :rank, integer(), enforce: true
+    field :registration_date, Date.t(), enforce: true
+    field :sponsor_name, String.t()
+    field :trainer, Atp.Players.Trainer.t(), enforce: true
+    field :birth_info, Atp.Players.Info.BirthInfo.t(), enforce: true
+  end
+
+  def to_avro_map(%__MODULE__{} = r) do
+    %{
+      "player_id" => r.player_id,
+      "full_name" => r.full_name,
+      "rank" => r.rank,
+      "registration_date" => Date.diff(r.registration_date, ~D[1970-01-01]),
+      "sponsor_name" => r.sponsor_name,
+      "trainer" =>
+        case r.trainer do
+          %Atp.Players.Trainer{} ->
+            Atp.Players.Trainer.to_avro_map(r.trainer)
+
+          _ ->
+            raise "Invalid type for r.trainer"
+        end,
+      "birth_info" =>
+        case r.birth_info do
+          %Atp.Players.Info.BirthInfo{} ->
+            Atp.Players.Info.BirthInfo.to_avro_map(r.birth_info)
+
+          _ ->
+            raise "Invalid type for r.birth_info"
+        end
+    }
+  end
+end
