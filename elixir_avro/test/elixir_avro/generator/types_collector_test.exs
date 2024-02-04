@@ -10,7 +10,33 @@ defmodule ElixirAvro.Generator.TypesCollectorTest do
              "atp.players.PlayerRegistered" => erlavro_schema_parsed_root_condensed(),
              "atp.players.Trainer" => erlavro_schema_parsed_nested_record()
            } ==
-             TypesCollector.collect(erlavro_schema_parsed_root_record())
+             TypesCollector.collect(erlavro_schema_parsed_root_record(), fn _ -> "" end)
+  end
+
+  test "references" do
+    schema_reader = fn "atp.players.Trainer" ->
+      """
+      {
+        "name": "Trainer",
+        "namespace": "atp.players",
+        "type": "record",
+        "fields": [
+            {
+                "name": "fullname",
+                "type": "string",
+                "doc": "Full name of the trainer."
+            }
+        ],
+        "doc": "A player trainer."
+      }
+      """
+    end
+
+    assert %{
+             "atp.players.PlayerRegistered" => erlavro_schema_parsed_root_condensed(),
+             "atp.players.Trainer" => erlavro_schema_parsed_reference_record()
+           } ==
+             TypesCollector.collect(erlavro_schema_parsed_root_condensed(), schema_reader)
   end
 
   defp erlavro_schema_parsed_nested_record() do
@@ -19,6 +45,22 @@ defmodule ElixirAvro.Generator.TypesCollectorTest do
        {:avro_record_field, "fullname", "", {:avro_primitive_type, "string", []}, :undefined,
         :ascending, []}
      ], @nested_record_full_name, []}
+  end
+
+  defp erlavro_schema_parsed_reference_record() do
+    {
+      :avro_record_type,
+      "Trainer",
+      "atp.players",
+      "A player trainer.",
+      [],
+      [
+        {:avro_record_field, "fullname", "Full name of the trainer.",
+         {:avro_primitive_type, "string", []}, :undefined, :ascending, []}
+      ],
+      "atp.players.Trainer",
+      []
+    }
   end
 
   defp erlavro_schema_parsed_root_condensed() do

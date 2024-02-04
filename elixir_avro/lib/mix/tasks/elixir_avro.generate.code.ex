@@ -14,7 +14,9 @@ defmodule Mix.Tasks.ElixirAvro.Generate.Code do
     "#{schemas_path}/**/*.avsc"
     |> Path.wildcard()
     |> Enum.map(&File.read!/1)
-    |> Enum.map(&ContentGenerator.modules_content_from_schema/1)
+    |> Enum.map(fn schema_content ->
+      ContentGenerator.modules_content_from_schema(schema_content, &read_schema_fun/1)
+    end)
     # For now we just override maps keys
     |> Enum.reduce(%{}, fn map, acc ->
       Map.merge(acc, map)
@@ -32,5 +34,10 @@ defmodule Mix.Tasks.ElixirAvro.Generate.Code do
 
     File.write!(module_path, module_content)
     ShellIO.info("Generated #{module_path}")
+  end
+
+  defp read_schema_fun(_type) do
+    # TODO To implement
+    ""
   end
 end

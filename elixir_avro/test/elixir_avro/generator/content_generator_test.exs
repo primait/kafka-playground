@@ -4,6 +4,40 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
   @expectations_folder "expectations"
   @schemas_folder "schemas"
 
+  @trainer_schema """
+  {
+    "name": "Trainer",
+    "namespace": "atp.players",
+    "type": "record",
+    "fields": [
+        {
+            "name": "fullname",
+            "type": "string",
+            "doc": "Full name of the trainer."
+        }
+    ],
+    "doc": "A player trainer."
+  }
+  """
+
+  @person_schema """
+  {
+    "name": "Person",
+    "namespace": "atp.players.info",
+    "type": "record",
+    "fields": [
+        {
+            "name": "fullname",
+            "type": "string"
+        },
+        {
+            "name": "age",
+            "type": "int"
+        }
+    ]
+  }
+  """
+
   alias ElixirAvro.Generator.ContentGenerator
 
   test "inline record" do
@@ -11,17 +45,34 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
              "Atp.Players.PlayerRegistered" => player_registered_module_content(),
              "Atp.Players.Trainer" => trainer_module_content()
            } ==
-             ContentGenerator.modules_content_from_schema(schema())
+             ContentGenerator.modules_content_from_schema(schema(), fn _ -> "" end)
   end
 
   test "two levels of inline record" do
     assert %{
-             "Atp.Players.PlayerRegisteredTwoLevelsNestingRecords" => player_registered2_module_content(),
+             "Atp.Players.PlayerRegisteredTwoLevelsNestingRecords" =>
+               player_registered2_module_content(),
              "Atp.Players.Trainer" => trainer_module_content(),
              "Atp.Players.Info.BirthInfo" => birth_info_module_content(),
              "Atp.Players.Info.Person" => person_module_content()
            } ==
-             ContentGenerator.modules_content_from_schema(schema2())
+             ContentGenerator.modules_content_from_schema(schema2(), fn _ -> "" end)
+  end
+
+  test "two levels of nested records with mixed cross reference and inline" do
+    read_schema_fun = fn
+      "atp.players.info.Person" -> @person_schema
+      "atp.players.Trainer" -> @trainer_schema
+    end
+
+    assert %{
+             "Atp.Players.PlayerRegisteredTwoLevelsNestingRecords" =>
+               player_registered2_module_content(),
+             "Atp.Players.Trainer" => trainer_module_content(),
+             "Atp.Players.Info.BirthInfo" => birth_info_module_content(),
+             "Atp.Players.Info.Person" => person_module_content()
+           } ==
+             ContentGenerator.modules_content_from_schema(schema3(), read_schema_fun)
   end
 
   defp player_registered_module_content() do
@@ -29,7 +80,9 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
   end
 
   defp player_registered2_module_content() do
-    File.read!(Path.join(__DIR__, "#{@expectations_folder}/player_registered_two_levels_nested_records"))
+    File.read!(
+      Path.join(__DIR__, "#{@expectations_folder}/player_registered_two_levels_nested_records")
+    )
   end
 
   defp trainer_module_content() do
@@ -49,6 +102,12 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
   end
 
   defp schema2() do
-    File.read!(Path.join(__DIR__, "#{@schemas_folder}/player_registered_two_levels_nested_records.avsc"))
+    File.read!(
+      Path.join(__DIR__, "#{@schemas_folder}/player_registered_two_levels_nested_records.avsc")
+    )
+  end
+
+  defp schema3() do
+    File.read!(Path.join(__DIR__, "#{@schemas_folder}/player_registered_with_record_ref.avsc"))
   end
 end
