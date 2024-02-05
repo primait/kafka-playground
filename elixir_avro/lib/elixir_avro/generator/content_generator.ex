@@ -3,6 +3,8 @@ defmodule ElixirAvro.Generator.ContentGenerator do
 
   alias ElixirAvro.Generator.Typedstruct
 
+  # TODO This as to take also target_path because it needs to prepend the module name mapped from the avro fullname
+  # with a path specific chunk given from the client application
   def modules_content_from_schema(root_schema_content, read_schema_fun) do
     root_schema_content
     |> ElixirAvro.SchemaParser.parse(read_schema_fun)
@@ -67,8 +69,7 @@ defmodule ElixirAvro.Generator.ContentGenerator do
     %{
       doc: doc,
       name: name,
-      typedstruct_spec: Typedstruct.spec_for(field),
-      to_avro_map_value: to_avro_map_value(type, "r.#{name}")
+      erlavro_type: type
     }
   end
 

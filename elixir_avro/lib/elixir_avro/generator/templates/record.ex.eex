@@ -13,13 +13,13 @@ defmodule <%= module_name %> do
   use TypedStruct
 
   typedstruct do
-    <%= for field <- fields_meta do %>field :<%= field.name %>, <%= field.typedstruct_spec %>
+    <%= for field <- fields_meta do %>field :<%= field.name %>, <%= ElixirAvro.Generator.Types.to_spec_string!(field.erlavro_type, "") <> ", enforce: true" %>
     <% end %>
   end
 
   def to_avro_map(%__MODULE__{} = r) do
     %{
-      <%= fields_meta |> Enum.map(&~s/"#{&1.name}" => #{&1.to_avro_map_value}/) |> Enum.join(", ") %>
+      <%= fields_meta |> Enum.map(&~s/"#{&1.name}" => #{ElixirAvro.Generator.Types.encode_value!("r.#{&1.name}", &1.erlavro_type)}/) |> Enum.join(", ") %>
     }
   end
 end
