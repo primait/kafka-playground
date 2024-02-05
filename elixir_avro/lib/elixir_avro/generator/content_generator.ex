@@ -1,8 +1,6 @@
 defmodule ElixirAvro.Generator.ContentGenerator do
   @moduledoc false
 
-  alias ElixirAvro.Generator.Typedstruct
-
   # TODO This as to take also target_path because it needs to prepend the module name mapped from the avro fullname
   # with a path specific chunk given from the client application
   def modules_content_from_schema(root_schema_content, read_schema_fun) do
@@ -64,52 +62,13 @@ defmodule ElixirAvro.Generator.ContentGenerator do
   end
 
   defp parse_field(
-         {:avro_record_field, name, doc, type, :undefined, :ascending, _aliases} = field
+         {:avro_record_field, name, doc, type, :undefined, :ascending, _aliases}
        ) do
     %{
       doc: doc,
       name: name,
       erlavro_type: type
     }
-  end
-
-  defp to_avro_map_value({:avro_primitive_type, _primitive_type, []}, value_expression) do
-    value_expression
-  end
-
-  defp to_avro_map_value(
-         {:avro_primitive_type, "int", [{"logicalType", "date"}]},
-         value_expression
-       ) do
-    # TODO evaluate if this could actually be a real elixir function
-    "Date.diff(#{value_expression}, ~D[1970-01-01])"
-  end
-
-  defp to_avro_map_value(
-         {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
-         value_expression
-       ) do
-    value_expression
-  end
-
-  defp to_avro_map_value({:avro_union_type, _, _} = union_type, value_expression) do
-    _types = union_type |> :avro_union.get_types()
-
-    # this should be a case checking wrapped in a function call
-    value_expression
-  end
-
-  defp to_avro_map_value(
-         fullname,
-         value_expression
-       )
-       when is_binary(fullname) do
-    ~s/
-case #{value_expression} do
-  %#{camelize(fullname)}{} ->
-    #{camelize(fullname)}.to_avro_map(#{value_expression})
-  _ -> raise "Invalid type for #{value_expression}"
-end/
   end
 
   # this is duplicated, put it in utils or something similar

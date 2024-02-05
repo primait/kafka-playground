@@ -21,15 +21,8 @@ defmodule Atp.Players.Info.BirthInfo do
 
   def to_avro_map(%__MODULE__{} = r) do
     %{
-      "birthday" => Date.diff(r.birthday, ~D[1970-01-01]),
-      "father" =>
-        case r.father do
-          %Atp.Players.Info.Person{} ->
-            Atp.Players.Info.Person.to_avro_map(r.father)
-
-          _ ->
-            raise "Invalid type for r.father"
-        end
+      "birthday" => ElixirAvro.Generator.Types.Date.encode_value!(r.birthday),
+      "father" => ElixirAvro.Generator.Types.Record.encode_value!(r.father, "atp.players.info.Person")
     }
   end
 end

@@ -4,7 +4,7 @@ defmodule ElixirAvro.Generator.Types do
   types from and into elixir types.
   """
 
-  alias ElixirBrod.Avro.ModuleWriter.Conventions
+  # alias ElixirBrod.Avro.ModuleWriter.Conventions
 
   # see: https://avro.apache.org/docs/1.11.0/spec.html#schema_primitive
   @primitive_type_spec_strings %{
@@ -32,6 +32,18 @@ defmodule ElixirAvro.Generator.Types do
     # avro specific custom implemented duration (incompatible with Timex.Duration) - leaving it out for the moment
     # {"fixed", "duration"} => "ElixirBrod.Avro.Duration.t()"
   }
+
+  def to_typedstruct_spec!(type, base_path) do
+    to_spec_string!(type, base_path) <> ", enforce: #{enforce?(type)}"
+  end
+
+  def enforce?({:avro_union_type, _, _}) do
+    false
+  end
+
+  def enforce?(_type) do
+    true
+  end
 
   @doc ~S"""
   Returns the string to be used as elixir type for any avro type.
@@ -149,8 +161,9 @@ defmodule ElixirAvro.Generator.Types do
   ### References
 
   iex> to_spec_string!("test.Type", "base_path")
-  "ElixirBrod.BasePath.Test.Type.t()"
+  "Test.Type.t()"
   """
+  # TODO should we rename this to something like to_typespec ?
   @spec to_spec_string!(:avro.type_or_name(), Path.t()) :: String.t() | no_return()
   def to_spec_string!({:avro_primitive_type, name, custom}, _base_path) do
     custom
@@ -188,11 +201,17 @@ defmodule ElixirAvro.Generator.Types do
     |> Enum.join(" | ")
   end
 
-  def to_spec_string!(reference, base_path) when is_binary(reference) do
-    namespace = Path.rootname(reference)
-    name = reference |> Path.extname() |> String.trim_leading(".")
+  def to_spec_string!(
+        {:avro_record_field, _name, _doc, fullname, _default, _ordering, _aliases},
+        _base_path
+      )
+      when is_binary(fullname) do
+    # eg: fullname=atp.players.Trainer
+    "#{camelize(fullname)}.t(), enforce: true"
+  end
 
-    "#{base_path |> Conventions.generate_path!(name, namespace) |> Conventions.fully_qualified_module_name()}.t()"
+  def to_spec_string!(reference, _base_path) when is_binary(reference) do
+    "#{camelize(reference)}.t()"
   end
 
   def to_spec_string!(type, _base_path) do
@@ -207,9 +226,17 @@ defmodule ElixirAvro.Generator.Types do
     end
   end
 
-  @spec encode_value(any(), :avro.type_or_name()) :: any() | no_return()
-  def encode_value!(value, _) do
-    value
+  @spec encode_value!(String.t(), :avro.type_or_name()) :: String.t() | no_return()
+  def encode_value!(value_expression, {:avro_primitive_type, "int", [{"logicalType", "date"}]}) do
+    "ElixirAvro.Generator.Types.Date.encode_value!(#{value_expression})"
+  end
+
+  def encode_value!(value_expression, fullname) when is_binary(fullname) do
+    "ElixirAvro.Generator.Types.Record.encode_value!(#{value_expression}, \"#{fullname}\")"
+  end
+
+  def encode_value!(value_expression, _) do
+    value_expression
   end
 
   @spec encode_value(any(), :avro.type_or_name()) :: {:ok, any()} | {:error, any()}
@@ -219,5 +246,13 @@ defmodule ElixirAvro.Generator.Types do
 
   @spec decode_value(any(), :avro.type_or_name()) :: {:ok, any()} | {:error, any()}
   def decode_value(_, _) do
+  end
+
+  # this is duplicated, put it in utils or something similar
+  defp camelize(fullname) do
+    fullname
+    |> String.split(".")
+    |> Enum.map(&:string.titlecase/1)
+    |> Enum.join(".")
   end
 end
