@@ -180,7 +180,7 @@ defmodule ElixirAvro.Generator.Types do
   end
 
   def to_spec_string!({:avro_union_type, id2type, _name2id}, base_path) do
-    #TODO usa funzione :avro_union.get_types
+    # TODO use :avro_union.get_types instead
     id2type
     |> :gb_trees.to_list()
     |> Enum.map(&elem(&1, 1))
@@ -197,6 +197,14 @@ defmodule ElixirAvro.Generator.Types do
 
   def to_spec_string!(type, _base_path) do
     raise ArgumentError, message: "unsupported avro type: #{inspect(type)}"
+  end
+
+  @spec get_spec_string(map, String.t()) :: String.t() | no_return()
+  defp get_spec_string(types_map, type) do
+    case Map.get(types_map, type) do
+      nil -> raise ArgumentError, message: "unsupported type: #{inspect(type)}"
+      type -> type
+    end
   end
 
   @spec encode_value(any(), :avro.type_or_name()) :: any() | no_return()
