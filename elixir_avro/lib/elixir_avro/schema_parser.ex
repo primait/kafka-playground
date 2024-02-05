@@ -1,7 +1,10 @@
-defmodule ElixirAvro.Generator.TypesCollector do
+defmodule ElixirAvro.SchemaParser do
   # This is not pure, since it uses ets underneath,
   # but with some effort we can make it pure if we really want to.
-  def collect(erlavro_schema_parsed, read_schema_fun) do
+  def parse(root_schema_content, read_schema_fun) do
+    erlavro_schema_parsed =
+      :avro_json_decoder.decode_schema(root_schema_content, allow_bad_references: true)
+
     {:ok, %Avrora.Schema{lookup_table: lookup_table}} =
       ElixirAvro.AvroraClient.Schema.Encoder.from_erlavro(erlavro_schema_parsed)
 

@@ -4,11 +4,8 @@ defmodule ElixirAvro.Generator.ContentGenerator do
   alias ElixirAvro.Generator.Typedstruct
 
   def modules_content_from_schema(root_schema_content, read_schema_fun) do
-    erlavro_schema_parsed =
-      :avro_json_decoder.decode_schema(root_schema_content, allow_bad_references: true)
-
-    erlavro_schema_parsed
-    |> ElixirAvro.Generator.TypesCollector.collect(read_schema_fun)
+    root_schema_content
+    |> ElixirAvro.SchemaParser.parse(read_schema_fun)
     |> Enum.map(fn {_fullname, erlavro_type} -> module_content(erlavro_type) end)
     |> Enum.into(%{})
   end
