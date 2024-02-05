@@ -5,7 +5,7 @@ defmodule Mix.Tasks.ElixirAvro.Generate.Code do
   alias Mix.Shell.IO, as: ShellIO
 
   @impl Mix.Task
-  def run([target_path, schemas_path]) do
+  def run([target_path, schemas_path, module_prefix]) do
     {:ok, _} = Application.ensure_all_started(:elixir_avro)
 
     File.mkdir_p!(target_path)
@@ -15,7 +15,7 @@ defmodule Mix.Tasks.ElixirAvro.Generate.Code do
     |> Path.wildcard()
     |> Enum.map(&File.read!/1)
     |> Enum.map(fn schema_content ->
-      ContentGenerator.modules_content_from_schema(schema_content, &read_schema_fun/1)
+      ContentGenerator.modules_content_from_schema(schema_content, &read_schema_fun/1, module_prefix)
     end)
     # For now we just override maps keys
     |> Enum.reduce(%{}, fn map, acc ->

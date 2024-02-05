@@ -1,4 +1,4 @@
-defmodule Atp.Players.Info.Person do
+defmodule My.Fantastic.App.Atp.Players.Info.Person do
   @moduledoc """
   DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
 

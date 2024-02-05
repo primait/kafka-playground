@@ -20,7 +20,6 @@ defmodule ElixirAvro.SchemaParser do
   end
 
   defp add_references_types(erlavro_schema_parsed, lookup_table, read_schema_fun) do
-    # TODO Should we copy the implementation of ReferenceCollector?
     {:ok, refs} = Avrora.Schema.ReferenceCollector.collect(erlavro_schema_parsed)
 
     refs

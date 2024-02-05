@@ -33,8 +33,8 @@ defmodule ElixirAvro.Generator.Types do
     # {"fixed", "duration"} => "ElixirBrod.Avro.Duration.t()"
   }
 
-  def to_typedstruct_spec!(type, base_path) do
-    to_spec_string!(type, base_path) <> ", enforce: #{enforce?(type)}"
+  def to_typedstruct_spec!(type, module_prefix) do
+    to_spec_string!(type, module_prefix) <> ", enforce: #{enforce?(type)}"
   end
 
   def enforce?({:avro_union_type, _, _}) do
@@ -52,101 +52,101 @@ defmodule ElixirAvro.Generator.Types do
 
   ## Primitive types
 
-  iex> to_spec_string!({:avro_primitive_type, "boolean", []}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "boolean", []}, "my_prefix")
   "boolean()"
 
-  iex> to_spec_string!({:avro_primitive_type, "bytes", []}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "bytes", []}, "my_prefix")
   "binary()"
 
-  iex> to_spec_string!({:avro_primitive_type, "double", []}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "double", []}, "my_prefix")
   "float()"
 
-  iex> to_spec_string!({:avro_primitive_type, "float", []}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "float", []}, "my_prefix")
   "float()"
 
-  iex> to_spec_string!({:avro_primitive_type, "int", []}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "int", []}, "my_prefix")
   "integer()"
 
-  iex> to_spec_string!({:avro_primitive_type, "long", []}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "long", []}, "my_prefix")
   "integer()"
 
-  iex> to_spec_string!({:avro_primitive_type, "null", []}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "null", []}, "my_prefix")
   "nil"
 
-  iex> to_spec_string!({:avro_primitive_type, "string", []}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "string", []}, "my_prefix")
   "String.t()"
 
   An unknown type will raise an ArgumentError:
 
-  iex> to_spec_string!({:avro_primitive_type, "non-existent-type", []}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "non-existent-type", []}, "my_prefix")
   ** (ArgumentError) unsupported type: "non-existent-type"
 
   ### Logical types
 
-  iex> to_spec_string!({:avro_primitive_type, "bytes", [{"logicalType", "decimal"}, {"precision", 4}, {"scale", 2}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "bytes", [{"logicalType", "decimal"}, {"precision", 4}, {"scale", 2}]}, "my_prefix")
   "Decimal.t()"
 
-  iex> to_spec_string!({:avro_primitive_type, "string", [{"logicalType", "uuid"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "string", [{"logicalType", "uuid"}]}, "my_prefix")
   "String.t()"
 
-  iex> to_spec_string!({:avro_primitive_type, "int", [{"logicalType", "date"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "int", [{"logicalType", "date"}]}, "my_prefix")
   "Date.t()"
 
-  iex> to_spec_string!({:avro_primitive_type, "int", [{"logicalType", "time-millis"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "int", [{"logicalType", "time-millis"}]}, "my_prefix")
   "Time.t()"
 
-  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "time-micros"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "time-micros"}]}, "my_prefix")
   "Time.t()"
 
-  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "timestamp-millis"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "timestamp-millis"}]}, "my_prefix")
   "DateTime.t()"
 
-  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "timestamp-micros"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "timestamp-micros"}]}, "my_prefix")
   "DateTime.t()"
 
-  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "local-timestamp-millis"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "local-timestamp-millis"}]}, "my_prefix")
   "NaiveDateTime.t()"
 
-  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "local-timestamp-micros"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "long", [{"logicalType", "local-timestamp-micros"}]}, "my_prefix")
   "NaiveDateTime.t()"
 
   An unknown logical type or a non-existent {primitive, logical} type combination will raise an ArgumentError:
 
-  iex> to_spec_string!({:avro_primitive_type, "int", [{"logicalType", "unsupported-logical-type"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "int", [{"logicalType", "unsupported-logical-type"}]}, "my_prefix")
   ** (ArgumentError) unsupported type: {"int", "unsupported-logical-type"}
 
-  iex> to_spec_string!({:avro_primitive_type, "string", [{"logicalType", "timestamp-millis"}]}, "base_path")
+  iex> to_spec_string!({:avro_primitive_type, "string", [{"logicalType", "timestamp-millis"}]}, "my_prefix")
   ** (ArgumentError) unsupported type: {"string", "timestamp-millis"}
 
   ### Fixed types
 
-  iex> to_spec_string!({:avro_fixed_type, "md5", "test", [], 16, "test.md5", []}, "base_path")
+  iex> to_spec_string!({:avro_fixed_type, "md5", "test", [], 16, "test.md5", []}, "my_prefix")
   "<<_::128>>"
 
   ### Array types
 
-  iex> to_spec_string!({:avro_array_type, {:avro_primitive_type, "string", []}, []}, "base_path")
+  iex> to_spec_string!({:avro_array_type, {:avro_primitive_type, "string", []}, []}, "my_prefix")
   "[String.t()]"
 
-  iex> to_spec_string!({:avro_array_type, {:avro_primitive_type, "int", [{"logicalType", "date"}]}, []}, "base_path")
+  iex> to_spec_string!({:avro_array_type, {:avro_primitive_type, "int", [{"logicalType", "date"}]}, []}, "my_prefix")
   "[Date.t()]"
 
   Primitive types error logic still applies:
 
-  iex> to_spec_string!({:avro_array_type, {:avro_primitive_type, "string", [{"logicalType", "date"}]}, []}, "base_path")
+  iex> to_spec_string!({:avro_array_type, {:avro_primitive_type, "string", [{"logicalType", "date"}]}, []}, "my_prefix")
   ** (ArgumentError) unsupported type: {"string", "date"}
 
   ### Map types
 
-  iex> to_spec_string!({:avro_map_type, {:avro_primitive_type, "int", []}, []}, "base_path")
+  iex> to_spec_string!({:avro_map_type, {:avro_primitive_type, "int", []}, []}, "my_prefix")
   "%{String.t() => integer()}"
 
-  iex> to_spec_string!({:avro_map_type, {:avro_primitive_type, "int", [{"logicalType", "time-millis"}]}, []}, "base_path")
+  iex> to_spec_string!({:avro_map_type, {:avro_primitive_type, "int", [{"logicalType", "time-millis"}]}, []}, "my_prefix")
   "%{String.t() => Time.t()}"
 
   Primitive types error logic still applies:
 
-  iex> to_spec_string!({:avro_map_type, {:avro_primitive_type, "string", [{"logicalType", "date"}]}, []}, "base_path")
+  iex> to_spec_string!({:avro_map_type, {:avro_primitive_type, "string", [{"logicalType", "date"}]}, []}, "my_prefix")
   ** (ArgumentError) unsupported type: {"string", "date"}
 
   ### Union types
@@ -155,17 +155,17 @@ defmodule ElixirAvro.Generator.Types do
   ...>  {2,
   ...>   {1, {:avro_primitive_type, "string", []},
   ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
-  ...>  {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, "base_path")
+  ...>  {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, "my_prefix")
   "nil | String.t()"
 
   ### References
 
-  iex> to_spec_string!("test.Type", "base_path")
-  "Test.Type.t()"
+  iex> to_spec_string!("test.Type", "my_prefix")
+  "MyPrefix.Test.Type.t()"
   """
   # TODO should we rename this to something like to_typespec ?
-  @spec to_spec_string!(:avro.type_or_name(), Path.t()) :: String.t() | no_return()
-  def to_spec_string!({:avro_primitive_type, name, custom}, _base_path) do
+  @spec to_spec_string!(:avro.type_or_name(), module_prefix :: String.t()) :: String.t() | no_return()
+  def to_spec_string!({:avro_primitive_type, name, custom}, _module_prefix) do
     custom
     |> List.keyfind("logicalType", 0)
     |> case do
@@ -179,39 +179,38 @@ defmodule ElixirAvro.Generator.Types do
 
   def to_spec_string!(
         {:avro_fixed_type, _name, _namespace, _aliases, size, _fullname, _custom},
-        _base_path
+        _module_prefix
       ) do
     "<<_::#{size * 8}>>"
   end
 
-  def to_spec_string!({:avro_array_type, type, _custom}, base_path) do
-    "[#{to_spec_string!(type, base_path)}]"
+  def to_spec_string!({:avro_array_type, type, _custom}, module_prefix) do
+    "[#{to_spec_string!(type, module_prefix)}]"
   end
 
-  def to_spec_string!({:avro_map_type, type, _custom}, base_path) do
-    "%{String.t() => #{to_spec_string!(type, base_path)}}"
+  def to_spec_string!({:avro_map_type, type, _custom}, module_prefix) do
+    "%{String.t() => #{to_spec_string!(type, module_prefix)}}"
   end
 
-  def to_spec_string!({:avro_union_type, id2type, _name2id}, base_path) do
-    # TODO use :avro_union.get_types instead
-    id2type
-    |> :gb_trees.to_list()
-    |> Enum.map(&elem(&1, 1))
-    |> Enum.map(&to_spec_string!(&1, base_path))
+  def to_spec_string!({:avro_union_type, _id2type, _name2id} = union, module_prefix) do
+    union
+    |> :avro_union.get_types()
+    |> Enum.map(&to_spec_string!(&1, module_prefix))
     |> Enum.join(" | ")
   end
 
+  # TODO should I delete this?
   def to_spec_string!(
         {:avro_record_field, _name, _doc, fullname, _default, _ordering, _aliases},
-        _base_path
+        _module_prefix
       )
       when is_binary(fullname) do
     # eg: fullname=atp.players.Trainer
     "#{camelize(fullname)}.t(), enforce: true"
   end
 
-  def to_spec_string!(reference, _base_path) when is_binary(reference) do
-    "#{camelize(reference)}.t()"
+  def to_spec_string!(reference, module_prefix) when is_binary(reference) do
+    "#{camelize(module_prefix)}.#{camelize(reference)}.t()"
   end
 
   def to_spec_string!(type, _base_path) do
@@ -252,7 +251,7 @@ defmodule ElixirAvro.Generator.Types do
   defp camelize(fullname) do
     fullname
     |> String.split(".")
-    |> Enum.map(&:string.titlecase/1)
+    |> Enum.map(&Macro.camelize/1)
     |> Enum.join(".")
   end
 end

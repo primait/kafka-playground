@@ -1,4 +1,4 @@
-defmodule Atp.Players.Info.BirthInfo do
+defmodule My.Fantastic.App.Atp.Players.Info.BirthInfo do
   @moduledoc """
   DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
 
@@ -16,7 +16,7 @@ defmodule Atp.Players.Info.BirthInfo do
 
   typedstruct do
     field :birthday, Date.t(), enforce: true
-    field :father, Atp.Players.Info.Person.t(), enforce: true
+    field :father, My.Fantastic.App.Atp.Players.Info.Person.t(), enforce: true
   end
 
   def to_avro_map(%__MODULE__{} = r) do

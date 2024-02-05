@@ -4,6 +4,8 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
   @expectations_folder "expectations"
   @schemas_folder "schemas"
 
+  @modules_namespace "My.Fantastic.App"
+
   @trainer_schema """
   {
     "name": "Trainer",
@@ -42,21 +44,21 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
 
   test "inline record" do
     assert %{
-             "Atp.Players.PlayerRegistered" => player_registered_module_content(),
-             "Atp.Players.Trainer" => trainer_module_content()
+             "#{@modules_namespace}.Atp.Players.PlayerRegistered" => player_registered_module_content(),
+             "#{@modules_namespace}.Atp.Players.Trainer" => trainer_module_content()
            } ==
-             ContentGenerator.modules_content_from_schema(schema(), fn _ -> "" end)
+             ContentGenerator.modules_content_from_schema(schema(), fn _ -> "" end, @modules_namespace)
   end
 
   test "two levels of inline record" do
     assert %{
-             "Atp.Players.PlayerRegisteredTwoLevelsNestingRecords" =>
+             "#{@modules_namespace}.Atp.Players.PlayerRegisteredTwoLevelsNestingRecords" =>
                player_registered2_module_content(),
-             "Atp.Players.Trainer" => trainer_module_content(),
-             "Atp.Players.Info.BirthInfo" => birth_info_module_content(),
-             "Atp.Players.Info.Person" => person_module_content()
+             "#{@modules_namespace}.Atp.Players.Trainer" => trainer_module_content(),
+             "#{@modules_namespace}.Atp.Players.Info.BirthInfo" => birth_info_module_content(),
+             "#{@modules_namespace}.Atp.Players.Info.Person" => person_module_content()
            } ==
-             ContentGenerator.modules_content_from_schema(schema2(), fn _ -> "" end)
+             ContentGenerator.modules_content_from_schema(schema2(), fn _ -> "" end, @modules_namespace)
   end
 
   test "two levels of nested records with mixed cross reference and inline" do
@@ -66,13 +68,13 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
     end
 
     assert %{
-             "Atp.Players.PlayerRegisteredTwoLevelsNestingRecords" =>
+             "#{@modules_namespace}.Atp.Players.PlayerRegisteredTwoLevelsNestingRecords" =>
                player_registered2_module_content(),
-             "Atp.Players.Trainer" => trainer_module_content(),
-             "Atp.Players.Info.BirthInfo" => birth_info_module_content(),
-             "Atp.Players.Info.Person" => person_module_content()
+             "#{@modules_namespace}.Atp.Players.Trainer" => trainer_module_content(),
+             "#{@modules_namespace}.Atp.Players.Info.BirthInfo" => birth_info_module_content(),
+             "#{@modules_namespace}.Atp.Players.Info.Person" => person_module_content()
            } ==
-             ContentGenerator.modules_content_from_schema(schema3(), read_schema_fun)
+             ContentGenerator.modules_content_from_schema(schema3(), read_schema_fun, @modules_namespace)
   end
 
   defp player_registered_module_content() do

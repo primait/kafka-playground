@@ -1,25 +1,29 @@
 defmodule ElixirAvro.Generator.ContentGenerator do
   @moduledoc false
 
-  # TODO This as to take also target_path because it needs to prepend the module name mapped from the avro fullname
-  # with a path specific chunk given from the client application
-  def modules_content_from_schema(root_schema_content, read_schema_fun) do
+  @spec modules_content_from_schema(
+          schema_content :: String.t(),
+          read_schema_fun :: fun(),
+          module_prefix :: String.t()
+        ) :: map
+  def modules_content_from_schema(root_schema_content, read_schema_fun, module_prefix) do
     root_schema_content
     |> ElixirAvro.SchemaParser.parse(read_schema_fun)
-    |> Enum.map(fn {_fullname, erlavro_type} -> module_content(erlavro_type) end)
+    |> Enum.map(fn {_fullname, erlavro_type} -> module_content(erlavro_type, module_prefix) end)
     |> Enum.into(%{})
   end
 
-  @spec module_content(erlavro_schema_parsed :: tuple) :: String.t()
-  defp module_content(erlavro_schema_parsed) do
+  @spec module_content(erlavro_schema_parsed :: tuple, module_prefix :: String.t()) :: String.t()
+  defp module_content(erlavro_schema_parsed, module_prefix) do
     moduledoc = module_doc(erlavro_schema_parsed)
-    module_name = module_name(erlavro_schema_parsed)
+    module_name = module_name(erlavro_schema_parsed, module_prefix)
     parsed_fields = parse_fields(erlavro_schema_parsed)
 
     bindings = [
       fields_meta: parsed_fields,
       moduledoc: moduledoc,
-      module_name: module_name
+      module_name: module_name,
+      module_prefix: module_prefix
     ]
 
     module_content =
@@ -34,11 +38,13 @@ defmodule ElixirAvro.Generator.ContentGenerator do
     Path.join(__DIR__, "templates/record.ex.eex")
   end
 
-  defp module_name({:avro_record_type, _name, _namespace, _doc, _, _fields, fullname, _}) do
-    camelize(fullname)
+  defp module_name(
+         {:avro_record_type, _name, _namespace, _doc, _, _fields, fullname, _},
+         module_prefix
+       ) do
+    module_prefix <> "." <> camelize(fullname)
   end
 
-  # TODO check if we have something already done in erlavro
   defp module_doc({:avro_record_type, _name, _namespace, doc, _, _fields, _fullname, _}) do
     doc
   end
@@ -61,9 +67,7 @@ defmodule ElixirAvro.Generator.ContentGenerator do
     Enum.map(fields, &parse_field/1)
   end
 
-  defp parse_field(
-         {:avro_record_field, name, doc, type, :undefined, :ascending, _aliases}
-       ) do
+  defp parse_field({:avro_record_field, name, doc, type, :undefined, :ascending, _aliases}) do
     %{
       doc: doc,
       name: name,

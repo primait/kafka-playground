@@ -13,7 +13,7 @@ defmodule <%= module_name %> do
   use TypedStruct
 
   typedstruct do
-    <%= for field <- fields_meta do %>field :<%= field.name %>, <%= ElixirAvro.Generator.Types.to_typedstruct_spec!(field.erlavro_type, "") %>
+    <%= for field <- fields_meta do %>field :<%= field.name %>, <%= ElixirAvro.Generator.Types.to_typedstruct_spec!(field.erlavro_type, module_prefix) %>
     <% end %>
   end
 
