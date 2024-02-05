@@ -5,17 +5,17 @@ defmodule ElixirAvro.SchemaParser do
     erlavro_schema_parsed =
       :avro_json_decoder.decode_schema(root_schema_content, allow_bad_references: true)
 
-    {:ok, %Avrora.Schema{lookup_table: lookup_table}} =
-      ElixirAvro.AvroraClient.Schema.Encoder.from_erlavro(erlavro_schema_parsed)
+    lookup_table = :avro_schema_store.new()
+    :avro_schema_store.add_type(erlavro_schema_parsed, lookup_table)
 
-    add_references(erlavro_schema_parsed, lookup_table, read_schema_fun)
+    add_references_types(erlavro_schema_parsed, lookup_table, read_schema_fun)
 
     :avro_schema_store.get_all_types(lookup_table)
     |> Enum.map(&{:avro.get_type_fullname(&1), &1})
     |> Enum.into(%{})
   end
 
-  defp add_references(erlavro_schema_parsed, lookup_table, read_schema_fun) do
+  defp add_references_types(erlavro_schema_parsed, lookup_table, read_schema_fun) do
     {:ok, refs} = Avrora.Schema.ReferenceCollector.collect(erlavro_schema_parsed)
 
     refs

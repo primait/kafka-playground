@@ -5,9 +5,7 @@ defmodule ElixirAvro.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      ElixirAvro.AvroraClient
-    ]
+    children = []
 
     opts = [strategy: :one_for_one, name: ElixirAvro.Supervisor]
     Supervisor.start_link(children, opts)
