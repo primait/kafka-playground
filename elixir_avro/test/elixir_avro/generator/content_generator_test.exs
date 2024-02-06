@@ -90,17 +90,18 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
              )
   end
 
-  # test "inline enum" do
-  #   assert %{
-  #            "#{@modules_namespace}.Atp.Players.Trainer" => trainer_with_enum_module_content(),
-  #            "#{@modules_namespace}.Atp.Players.Trainers.TrainerLevel" => trainer_level_module_content()
-  #          } ==
-  #            ContentGenerator.modules_content_from_schema(
-  #              schema4(),
-  #              fn _ -> "" end,
-  #              @modules_namespace
-  #            )
-  # end
+  test "inline enum" do
+    assert %{
+             "#{@modules_namespace}.Atp.Players.Trainer" => trainer_with_enum_module_content(),
+             "#{@modules_namespace}.Atp.Players.Trainers.TrainerLevel" =>
+               trainer_level_module_content()
+           } ==
+             ContentGenerator.modules_content_from_schema(
+               schema4(),
+               fn _ -> "" end,
+               @modules_namespace
+             )
+  end
 
   defp player_registered_module_content() do
     File.read!(Path.join(__DIR__, "#{@expectations_folder}/player_registered"))
@@ -129,7 +130,7 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
   end
 
   defp trainer_level_module_content() do
-
+    File.read!(Path.join(__DIR__, "#{@expectations_folder}/trainer_level"))
   end
 
   defp schema() do

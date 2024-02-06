@@ -1,0 +1,14 @@
+defmodule <%= module_name %> do
+  @moduledoc """
+  DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
+
+  <%= moduledoc %>
+
+  """
+
+  use ElixirAvro.ElixirEnum
+
+  @values [
+    <%= values |> Enum.map(&"\"#{&1}\"") |> Enum.join(", ") %>
+  ]
+end

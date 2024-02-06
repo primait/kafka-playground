@@ -14,17 +14,19 @@ defmodule ElixirAvro.Generator.ContentGenerator do
   end
 
   @spec module_content(erlavro_schema_parsed :: tuple, module_prefix :: String.t()) :: String.t()
-  defp module_content(erlavro_schema_parsed, module_prefix) do
+  defp module_content(
+         erlavro_schema_parsed,
+         module_prefix
+       ) do
     moduledoc = module_doc(erlavro_schema_parsed)
     module_name = module_name(erlavro_schema_parsed, module_prefix)
-    parsed_fields = parse_fields(erlavro_schema_parsed)
 
-    bindings = [
-      fields_meta: parsed_fields,
-      moduledoc: moduledoc,
-      module_name: module_name,
-      module_prefix: module_prefix
-    ]
+    bindings =
+      [
+        moduledoc: moduledoc,
+        module_name: module_name,
+        module_prefix: module_prefix
+      ] ++ get_spefic_bindings(erlavro_schema_parsed)
 
     module_content =
       eval_template!(template_path(erlavro_schema_parsed), bindings,
@@ -34,8 +36,27 @@ defmodule ElixirAvro.Generator.ContentGenerator do
     {module_name, module_content}
   end
 
+  defp get_spefic_bindings(
+         {:avro_record_type, _name, _namespace, _doc, _, _fields, _fullname, _} =
+           erlavro_schema_parsed
+       ) do
+    [fields_meta: fields_meta(erlavro_schema_parsed)]
+  end
+
+  defp get_spefic_bindings(
+         {:avro_enum_type, _name, _namespace, _aliases, _doc, symbols, _fullname, _custom}
+       ) do
+    [values: symbols]
+  end
+
   defp template_path({:avro_record_type, _name, _namespace, _doc, _, _fields, _fullname, _}) do
     Path.join(__DIR__, "templates/record.ex.eex")
+  end
+
+  defp template_path(
+         {:avro_enum_type, _name, _namespace, _aliases, _doc, _symbols, _fullname, _custom}
+       ) do
+    Path.join(__DIR__, "templates/enum.ex.eex")
   end
 
   defp module_name(
@@ -45,7 +66,22 @@ defmodule ElixirAvro.Generator.ContentGenerator do
     module_prefix <> "." <> camelize(fullname)
   end
 
-  defp module_doc({:avro_record_type, _name, _namespace, doc, _, _fields, _fullname, _}) do
+  defp module_name(
+         {:avro_enum_type, _name, _namespace, _aliases, _doc, _symbols, fullname, _custom},
+         module_prefix
+       ) do
+    module_prefix <> "." <> camelize(fullname)
+  end
+
+  defp module_doc(
+         {:avro_record_type, _name, _namespace, doc, _aliases, _fields, _fullname, _custom}
+       ) do
+    doc
+  end
+
+  defp module_doc(
+         {:avro_enum_type, _name, _namespace, _aliases, doc, _symbols, _fullname, _custom}
+       ) do
     doc
   end
 
@@ -63,11 +99,11 @@ defmodule ElixirAvro.Generator.ContentGenerator do
     |> Kernel.<>("\n")
   end
 
-  defp parse_fields({_type, _name, _namespace, _doc, _, fields, _fullname, _}) do
-    Enum.map(fields, &parse_field/1)
+  defp fields_meta({:avro_record_type, _name, _namespace, _doc, _, fields, _fullname, _}) do
+    Enum.map(fields, &field_meta/1)
   end
 
-  defp parse_field({:avro_record_field, name, doc, type, :undefined, :ascending, _aliases}) do
+  defp field_meta({:avro_record_field, name, doc, type, :undefined, :ascending, _aliases}) do
     %{
       doc: doc,
       name: name,
