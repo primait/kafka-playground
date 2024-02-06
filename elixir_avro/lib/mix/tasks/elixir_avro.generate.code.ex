@@ -5,11 +5,10 @@ defmodule Mix.Tasks.ElixirAvro.Generate.Code do
   alias Mix.Shell.IO, as: ShellIO
 
   @impl Mix.Task
-  def run([target_path, schemas_path, module_prefix]) do
+  def run([root_path, schemas_path, prefix]) do
     {:ok, _} = Application.ensure_all_started(:elixir_avro)
 
-    File.mkdir_p!(target_path)
-    File.rm_rf!(target_path)
+    File.mkdir_p!(root_path)
 
     "#{schemas_path}/**/*.avsc"
     |> Path.wildcard()
@@ -18,20 +17,21 @@ defmodule Mix.Tasks.ElixirAvro.Generate.Code do
       ContentGenerator.modules_content_from_schema(
         schema_content,
         &read_schema_fun/1,
-        module_prefix
+        prefix
       )
     end)
     # For now we just override maps keys
     |> Enum.reduce(%{}, fn map, acc ->
       Map.merge(acc, map)
     end)
-    |> Enum.each(&write_module(&1, target_path))
+    |> Enum.each(&write_module(&1, root_path))
 
     :ok
   end
 
   defp write_module({module_name, module_content}, target_path) do
-    filename = String.replace(module_name, ".", "/")
+    # Macro.underscore replaces . with /
+    filename = Macro.underscore(module_name)
 
     module_path = Path.join(target_path, "#{filename}.ex")
     File.mkdir_p!(Path.dirname(module_path))
