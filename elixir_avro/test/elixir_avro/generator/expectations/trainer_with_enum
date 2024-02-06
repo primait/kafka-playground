@@ -1,0 +1,27 @@
+defmodule My.Fantastic.App.Atp.Players.Trainer do
+  @moduledoc """
+  DO NOT EDIT MANUALLY: This module was automatically generated from an AVRO schema.
+
+  A player trainer.
+
+  Fields:
+
+    `fullname`: Full name of the trainer.
+
+    `level`:
+
+  """
+
+  use TypedStruct
+
+  typedstruct do
+    field :fullname, String.t(), enforce: true
+  end
+
+  def to_avro_map(%__MODULE__{} = r) do
+    %{
+      "fullname" => r.fullname,
+      "level" => ElixirAvro.Generator.Types.Enum.encode_value!(r.level, :"My.Fantastic.App.Atp.Players.Trainers.TrainerLevel")
+    }
+  end
+end

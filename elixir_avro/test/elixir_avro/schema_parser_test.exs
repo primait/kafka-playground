@@ -5,38 +5,62 @@ defmodule ElixirAvro.SchemaParserTest do
 
   @schemas_path "test/elixir_avro/schema_parser/schemas"
 
-  test "inline record" do
-    assert %{
-             "atp.players.PlayerRegistered" => player_registered_erlavro(),
-             "atp.players.Trainer" => trainer_nested_erlavro()
-           } ==
-             SchemaParser.parse(schema(), fn _ -> "" end)
-  end
-
-  test "record ref" do
-    schema_reader = fn "atp.players.Trainer" -> File.read!("#{@schemas_path}/trainer.avsc") end
-
-    assert %{
-             "atp.players.PlayerRegistered" => player_registered_erlavro(),
-             "atp.players.Trainer" => trainer_ref_erlavro()
-           } ==
-             SchemaParser.parse(schema2(), schema_reader)
-  end
-
-  test "two levels of nested records with mixed cross reference and inline" do
-    schema_reader = fn
-      "atp.players.Trainer" -> File.read!("#{@schemas_path}/trainer.avsc")
-      "atp.players.info.Person" -> File.read!("#{@schemas_path}/person.avsc")
+  describe "inline types" do
+    test "record" do
+      assert %{
+               "atp.players.PlayerRegistered" => player_registered_erlavro(),
+               "atp.players.Trainer" => trainer_nested_erlavro()
+             } ==
+               SchemaParser.parse(schema(), fn _ -> "" end)
     end
 
-    assert %{
-             "atp.players.PlayerRegisteredTwoLevelsNestingRecords" =>
-               player_registered2_erlavro(),
-             "atp.players.Trainer" => trainer_nested_erlavro(),
-             "atp.players.info.BirthInfo" => birth_info_erlavro(),
-             "atp.players.info.Person" => person_erlavro()
-           } ==
-             SchemaParser.parse(schema3(), schema_reader)
+    test "enum" do
+      assert %{
+               "atp.players.Trainer" => trainer_with_enum(),
+               "atp.players.trainers.TrainerLevel" => trainer_level_erlavro()
+             } ==
+               SchemaParser.parse(schema4(), fn _ -> "" end)
+    end
+  end
+
+  describe "cross references" do
+    test "record" do
+      schema_reader = fn "atp.players.Trainer" -> File.read!("#{@schemas_path}/trainer.avsc") end
+
+      assert %{
+               "atp.players.PlayerRegistered" => player_registered_erlavro(),
+               "atp.players.Trainer" => trainer_ref_erlavro()
+             } ==
+               SchemaParser.parse(schema2(), schema_reader)
+    end
+
+    test "enum" do
+      schema_reader = fn "atp.players.trainers.TrainerLevel" -> File.read!("#{@schemas_path}/trainer_level.avsc") end
+
+      assert %{
+               "atp.players.Trainer" => trainer_with_enum(),
+               "atp.players.trainers.TrainerLevel" => trainer_level_erlavro()
+             } ==
+               SchemaParser.parse(schema5(), schema_reader)
+    end
+  end
+
+  describe "mixed inline and cross" do
+    test "two levels of nested records" do
+      schema_reader = fn
+        "atp.players.Trainer" -> File.read!("#{@schemas_path}/trainer.avsc")
+        "atp.players.info.Person" -> File.read!("#{@schemas_path}/person.avsc")
+      end
+
+      assert %{
+               "atp.players.PlayerRegisteredTwoLevelsNestingRecords" =>
+                 player_registered2_erlavro(),
+               "atp.players.Trainer" => trainer_nested_erlavro(),
+               "atp.players.info.BirthInfo" => birth_info_erlavro(),
+               "atp.players.info.Person" => person_erlavro()
+             } ==
+               SchemaParser.parse(schema3(), schema_reader)
+    end
   end
 
   defp birth_info_erlavro() do
@@ -163,6 +187,28 @@ defmodule ElixirAvro.SchemaParserTest do
     }
   end
 
+  defp trainer_with_enum() do
+    {
+      :avro_record_type,
+      "Trainer",
+      "atp.players",
+      "A player trainer.",
+      [],
+      [
+        {:avro_record_field, "fullname", "Full name of the trainer.",
+         {:avro_primitive_type, "string", []}, :undefined, :ascending, []},
+        {:avro_record_field, "level", "", "atp.players.trainers.TrainerLevel", :undefined, :ascending, []}
+      ],
+      "atp.players.Trainer",
+      []
+    }
+  end
+
+  defp trainer_level_erlavro() do
+    {:avro_enum_type, "TrainerLevel", "atp.players.trainers", [], "Trainer certified level.",
+     ["BEGINNER", "INTERMEDIATE", "ADVANCE"], "atp.players.trainers.TrainerLevel", []}
+  end
+
   defp schema() do
     File.read!("#{@schemas_path}/player_registered.avsc")
   end
@@ -173,5 +219,13 @@ defmodule ElixirAvro.SchemaParserTest do
 
   defp schema3() do
     File.read!("#{@schemas_path}/player_registered_two_levels_nested_records.avsc")
+  end
+
+  defp schema4() do
+    File.read!("#{@schemas_path}/trainer_with_inline_enum.avsc")
+  end
+
+  defp schema5() do
+    File.read!("#{@schemas_path}/trainer_with_enum_as_ref.avsc")
   end
 end
