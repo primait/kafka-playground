@@ -225,16 +225,16 @@ defmodule ElixirAvro.Generator.Types do
     end
   end
 
-  @spec encode_value!(String.t(), :avro.type_or_name()) :: String.t() | no_return()
-  def encode_value!(value_expression, {:avro_primitive_type, "int", [{"logicalType", "date"}]}) do
+  @spec encode_value!(value_expression :: String.t(), :avro.type_or_name(), module_prefix :: String.t()) :: String.t() | no_return()
+  def encode_value!(value_expression, {:avro_primitive_type, "int", [{"logicalType", "date"}]}, _module_prefix) do
     "ElixirAvro.Generator.Types.Date.encode_value!(#{value_expression})"
   end
 
-  def encode_value!(value_expression, fullname) when is_binary(fullname) do
-    "ElixirAvro.Generator.Types.Record.encode_value!(#{value_expression}, \"#{fullname}\")"
+  def encode_value!(value_expression, fullname, module_prefix) when is_binary(fullname) do
+    "ElixirAvro.Generator.Types.Record.encode_value!(#{value_expression}, :\"#{module_prefix}.#{camelize(fullname)}\")"
   end
 
-  def encode_value!(value_expression, _) do
+  def encode_value!(value_expression, _type, _module_prefix) do
     value_expression
   end
 

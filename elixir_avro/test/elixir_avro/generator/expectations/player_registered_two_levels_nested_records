@@ -42,8 +42,9 @@ defmodule My.Fantastic.App.Atp.Players.PlayerRegisteredTwoLevelsNestingRecords d
       "rank" => r.rank,
       "registration_date" => ElixirAvro.Generator.Types.Date.encode_value!(r.registration_date),
       "sponsor_name" => r.sponsor_name,
-      "trainer" => ElixirAvro.Generator.Types.Record.encode_value!(r.trainer, "atp.players.Trainer"),
-      "birth_info" => ElixirAvro.Generator.Types.Record.encode_value!(r.birth_info, "atp.players.info.BirthInfo")
+      "trainer" => ElixirAvro.Generator.Types.Record.encode_value!(r.trainer, :"My.Fantastic.App.Atp.Players.Trainer"),
+      "birth_info" =>
+        ElixirAvro.Generator.Types.Record.encode_value!(r.birth_info, :"My.Fantastic.App.Atp.Players.Info.BirthInfo")
     }
   end
 end

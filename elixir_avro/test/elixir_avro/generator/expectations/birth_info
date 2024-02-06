@@ -22,7 +22,7 @@ defmodule My.Fantastic.App.Atp.Players.Info.BirthInfo do
   def to_avro_map(%__MODULE__{} = r) do
     %{
       "birthday" => ElixirAvro.Generator.Types.Date.encode_value!(r.birthday),
-      "father" => ElixirAvro.Generator.Types.Record.encode_value!(r.father, "atp.players.info.Person")
+      "father" => ElixirAvro.Generator.Types.Record.encode_value!(r.father, :"My.Fantastic.App.Atp.Players.Info.Person")
     }
   end
 end
