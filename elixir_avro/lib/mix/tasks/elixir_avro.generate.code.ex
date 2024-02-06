@@ -15,7 +15,11 @@ defmodule Mix.Tasks.ElixirAvro.Generate.Code do
     |> Path.wildcard()
     |> Enum.map(&File.read!/1)
     |> Enum.map(fn schema_content ->
-      ContentGenerator.modules_content_from_schema(schema_content, &read_schema_fun/1, module_prefix)
+      ContentGenerator.modules_content_from_schema(
+        schema_content,
+        &read_schema_fun/1,
+        module_prefix
+      )
     end)
     # For now we just override maps keys
     |> Enum.reduce(%{}, fn map, acc ->

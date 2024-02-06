@@ -164,7 +164,8 @@ defmodule ElixirAvro.Generator.Types do
   "MyPrefix.Test.Type.t()"
   """
   # TODO should we rename this to something like to_typespec ?
-  @spec to_spec_string!(:avro.type_or_name(), module_prefix :: String.t()) :: String.t() | no_return()
+  @spec to_spec_string!(:avro.type_or_name(), module_prefix :: String.t()) ::
+          String.t() | no_return()
   def to_spec_string!({:avro_primitive_type, name, custom}, _module_prefix) do
     custom
     |> List.keyfind("logicalType", 0)
@@ -225,8 +226,16 @@ defmodule ElixirAvro.Generator.Types do
     end
   end
 
-  @spec encode_value!(value_expression :: String.t(), :avro.type_or_name(), module_prefix :: String.t()) :: String.t() | no_return()
-  def encode_value!(value_expression, {:avro_primitive_type, "int", [{"logicalType", "date"}]}, _module_prefix) do
+  @spec encode_value!(
+          value_expression :: String.t(),
+          :avro.type_or_name(),
+          module_prefix :: String.t()
+        ) :: String.t() | no_return()
+  def encode_value!(
+        value_expression,
+        {:avro_primitive_type, "int", [{"logicalType", "date"}]},
+        _module_prefix
+      ) do
     "ElixirAvro.Generator.Types.Date.encode_value!(#{value_expression})"
   end
 

@@ -44,10 +44,15 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
 
   test "inline record" do
     assert %{
-             "#{@modules_namespace}.Atp.Players.PlayerRegistered" => player_registered_module_content(),
+             "#{@modules_namespace}.Atp.Players.PlayerRegistered" =>
+               player_registered_module_content(),
              "#{@modules_namespace}.Atp.Players.Trainer" => trainer_module_content()
            } ==
-             ContentGenerator.modules_content_from_schema(schema(), fn _ -> "" end, @modules_namespace)
+             ContentGenerator.modules_content_from_schema(
+               schema(),
+               fn _ -> "" end,
+               @modules_namespace
+             )
   end
 
   test "two levels of inline record" do
@@ -58,7 +63,11 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
              "#{@modules_namespace}.Atp.Players.Info.BirthInfo" => birth_info_module_content(),
              "#{@modules_namespace}.Atp.Players.Info.Person" => person_module_content()
            } ==
-             ContentGenerator.modules_content_from_schema(schema2(), fn _ -> "" end, @modules_namespace)
+             ContentGenerator.modules_content_from_schema(
+               schema2(),
+               fn _ -> "" end,
+               @modules_namespace
+             )
   end
 
   test "two levels of nested records with mixed cross reference and inline" do
@@ -74,7 +83,11 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
              "#{@modules_namespace}.Atp.Players.Info.BirthInfo" => birth_info_module_content(),
              "#{@modules_namespace}.Atp.Players.Info.Person" => person_module_content()
            } ==
-             ContentGenerator.modules_content_from_schema(schema3(), read_schema_fun, @modules_namespace)
+             ContentGenerator.modules_content_from_schema(
+               schema3(),
+               read_schema_fun,
+               @modules_namespace
+             )
   end
 
   defp player_registered_module_content() do

@@ -2,7 +2,6 @@ defmodule ElixirAvro.SchemaParser do
   # avoid to overwrite same types and break if the defitions are different, check if add_type already does it
   # apparently there is `allow_type_redefine`, let's test if it works as expected
 
-
   # This is not pure, since it uses ets underneath,
   # but with some effort we can make it pure if we really want to.
   def parse(root_schema_content, read_schema_fun) do
