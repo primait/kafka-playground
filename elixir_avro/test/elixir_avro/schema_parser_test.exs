@@ -45,6 +45,14 @@ defmodule ElixirAvro.SchemaParserTest do
              } ==
                SchemaParser.parse(schema5(), schema_reader)
     end
+
+    test "cross reference to the current schema" do
+      assert %{
+               "atp.players.Trainer" => trainer_with_same_enum_inline_and_as_ref(),
+               "atp.players.trainers.TrainerLevel" => trainer_level_erlavro()
+             } ==
+               SchemaParser.parse(schema6(), fn _ -> "" end)
+    end
   end
 
   describe "mixed inline and cross" do
@@ -207,6 +215,26 @@ defmodule ElixirAvro.SchemaParserTest do
     }
   end
 
+  defp trainer_with_same_enum_inline_and_as_ref() do
+    {
+      :avro_record_type,
+      "Trainer",
+      "atp.players",
+      "A player trainer.",
+      [],
+      [
+        {:avro_record_field, "fullname", "Full name of the trainer.",
+         {:avro_primitive_type, "string", []}, :undefined, :ascending, []},
+        {:avro_record_field, "atp_level", "Trainer certified level by ATP.",
+         "atp.players.trainers.TrainerLevel", :undefined, :ascending, []},
+        {:avro_record_field, "fit_level", "Trainer certified level by FIT.",
+         "atp.players.trainers.TrainerLevel", :undefined, :ascending, []}
+      ],
+      "atp.players.Trainer",
+      []
+    }
+  end
+
   defp trainer_level_erlavro() do
     {:avro_enum_type, "TrainerLevel", "atp.players.trainers", [], "Trainer certified level.",
      ["BEGINNER", "INTERMEDIATE", "ADVANCE"], "atp.players.trainers.TrainerLevel", []}
@@ -230,5 +258,9 @@ defmodule ElixirAvro.SchemaParserTest do
 
   defp schema5() do
     File.read!("#{@schemas_path}/trainer_with_enum_as_ref.avsc")
+  end
+
+  defp schema6() do
+    File.read!("#{@schemas_path}/trainer_with_same_enum_inline_and_as_ref.avsc")
   end
 end

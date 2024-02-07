@@ -19,11 +19,24 @@ defmodule ElixirAvro.SchemaParser do
   end
 
   defp add_references_types(erlavro_schema_parsed, lookup_table, read_schema_fun) do
-    {:ok, refs} = Avrora.Schema.ReferenceCollector.collect(erlavro_schema_parsed)
+    {:ok, refs} =
+      Avrora.Schema.ReferenceCollector.collect(erlavro_schema_parsed)
 
     refs
-    |> Enum.map(&read_schema_fun.(&1))
-    |> Enum.map(&:avro_json_decoder.decode_schema(&1, allow_bad_references: true))
+    |> Enum.map(&lookup_type(&1, read_schema_fun, lookup_table))
     |> Enum.map(&:avro_schema_store.add_type(&1, lookup_table))
+  end
+
+  defp lookup_type(ref, read_schema_fun, lookup_table) do
+    looked_up = :avro_schema_store.lookup_type(ref, lookup_table)
+    # TODO Give precedence to lookup_table, does it make sense?
+    if looked_up do
+      {:ok, type} = looked_up
+      type
+    else
+      ref
+      |> read_schema_fun.()
+      |> :avro_json_decoder.decode_schema(allow_bad_references: true)
+    end
   end
 end
