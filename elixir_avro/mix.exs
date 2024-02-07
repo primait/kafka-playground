@@ -23,8 +23,11 @@ defmodule ElixirAvro.MixProject do
   defp deps do
     [
       {:avrora, "~> 0.21"},
+      {:decimal, "~> 2.0"},
       {:excribe, "~> 0.1.1"},
-      {:typed_struct, "~> 0.3.0"}
+      {:timex, "~> 3.7.11"},
+      {:typed_struct, "~> 0.3.0"},
+      {:uuid, "~> 1.1.8"}
     ]
   end
 end

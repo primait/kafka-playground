@@ -4,7 +4,7 @@ defmodule ElixirAvro.Generator.Types do
   types from and into elixir types.
   """
 
-  # alias ElixirBrod.Avro.ModuleWriter.Conventions
+  require Decimal
 
   # see: https://avro.apache.org/docs/1.11.0/spec.html#schema_primitive
   @primitive_type_spec_strings %{
@@ -81,7 +81,7 @@ defmodule ElixirAvro.Generator.Types do
   iex> to_spec_string!({:avro_primitive_type, "non-existent-type", []}, "my_prefix")
   ** (ArgumentError) unsupported type: "non-existent-type"
 
-  ### Logical types
+  ## Logical types
 
   iex> to_spec_string!({:avro_primitive_type, "bytes", [{"logicalType", "decimal"}, {"precision", 4}, {"scale", 2}]}, "my_prefix")
   "Decimal.t()"
@@ -118,12 +118,12 @@ defmodule ElixirAvro.Generator.Types do
   iex> to_spec_string!({:avro_primitive_type, "string", [{"logicalType", "timestamp-millis"}]}, "my_prefix")
   ** (ArgumentError) unsupported type: {"string", "timestamp-millis"}
 
-  ### Fixed types
+  ## Fixed types
 
   iex> to_spec_string!({:avro_fixed_type, "md5", "test", [], 16, "test.md5", []}, "my_prefix")
   "<<_::128>>"
 
-  ### Array types
+  ## Array types
 
   iex> to_spec_string!({:avro_array_type, {:avro_primitive_type, "string", []}, []}, "my_prefix")
   "[String.t()]"
@@ -136,7 +136,7 @@ defmodule ElixirAvro.Generator.Types do
   iex> to_spec_string!({:avro_array_type, {:avro_primitive_type, "string", [{"logicalType", "date"}]}, []}, "my_prefix")
   ** (ArgumentError) unsupported type: {"string", "date"}
 
-  ### Map types
+  ## Map types
 
   iex> to_spec_string!({:avro_map_type, {:avro_primitive_type, "int", []}, []}, "my_prefix")
   "%{String.t() => integer()}"
@@ -149,7 +149,7 @@ defmodule ElixirAvro.Generator.Types do
   iex> to_spec_string!({:avro_map_type, {:avro_primitive_type, "string", [{"logicalType", "date"}]}, []}, "my_prefix")
   ** (ArgumentError) unsupported type: {"string", "date"}
 
-  ### Union types
+  ## Union types
 
   iex> to_spec_string!({:avro_union_type,
   ...>  {2,
@@ -158,7 +158,7 @@ defmodule ElixirAvro.Generator.Types do
   ...>  {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, "my_prefix")
   "nil | String.t()"
 
-  ### References
+  ## References
 
   iex> to_spec_string!("test.Type", "my_prefix")
   "MyPrefix.Test.Type.t()"
@@ -167,9 +167,7 @@ defmodule ElixirAvro.Generator.Types do
   @spec to_spec_string!(:avro.type_or_name(), module_prefix :: String.t()) ::
           String.t() | no_return()
   def to_spec_string!({:avro_primitive_type, name, custom}, _module_prefix) do
-    custom
-    |> List.keyfind("logicalType", 0)
-    |> case do
+    case List.keyfind(custom, "logicalType", 0) do
       nil ->
         get_spec_string(@primitive_type_spec_strings, name)
 
@@ -247,13 +245,503 @@ defmodule ElixirAvro.Generator.Types do
     value_expression
   end
 
-  @spec encode_value(any(), :avro.type_or_name()) :: {:ok, any()} | {:error, any()}
-  def encode_value(value, _) do
-    {:ok, value}
+  @doc ~S"""
+  Encodes any value into an avro compatible format.
+
+  # Examples
+
+  ## Primitive types
+
+  iex> encode_value(true, {:avro_primitive_type, "boolean", []})
+  {:ok, true}
+
+  iex> encode_value(25, {:avro_primitive_type, "int", []})
+  {:ok, 25}
+
+  iex> encode_value(2_147_483_648, {:avro_primitive_type, "int", []})
+  {:error, "value out of range"}
+
+  iex> encode_value(~D[2024-01-01], {:avro_primitive_type, "int", [{"logicalType", "date"}]})
+  {:ok, 19723}
+
+  iex> encode_value(~T[01:01:01.123], {:avro_primitive_type, "int", [{"logicalType", "time-millis"}]})
+  {:ok, 3661123}
+
+  iex> encode_value(~T[04:05:06.001002], {:avro_primitive_type, "int", [{"logicalType", "date"}]})
+  {:error, "not a date value"}
+
+  iex> encode_value(~T[07:08:19.000123], {:avro_primitive_type, "long", [{"logicalType", "time-micros"}]})
+  {:ok, 25699000123}
+
+  iex> encode_value(~U[2024-01-01 01:02:03.000Z], {:avro_primitive_type, "long", [{"logicalType", "timestamp-millis"}]})
+  {:ok, 1704070923000}
+
+  iex> encode_value(~N[2010-01-13 23:00:07.005], {:avro_primitive_type, "long", [{"logicalType", "local-timestamp-micros"}]})
+  {:ok, 1263423607005000}
+
+  iex> encode_value(~N[2024-01-13 11:00:03.123], {:avro_primitive_type, "long", [{"logicalType", "timestamp-micros"}]})
+  {:error, "not a datetime value"}
+
+  iex> encode_value("67caff17-798d-4b70-b9d0-781d27382fdc", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]})
+  {:ok, "67caff17-798d-4b70-b9d0-781d27382fdc"}
+
+  iex> encode_value("not-a-uuid", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]})
+  {:error, "not a uuid value"}
+
+  ## Array types
+
+  iex> encode_value(["one", "two"], {:avro_array_type, {:avro_primitive_type, "string", []}, []})
+  {:ok, ["one", "two"]}
+
+  iex> encode_value(["one", 2], {:avro_array_type, {:avro_primitive_type, "string", []}, []})
+  {:error, "not a string value"}
+
+  ## Map types
+
+  iex> encode_value(%{"one" => 1, "two" => 2}, {:avro_map_type, {:avro_primitive_type, "int", []}, []})
+  {:ok, %{"one" => 1, "two" => 2}}
+
+  iex> encode_value(%{"one" => 1, "two" => "2"}, {:avro_map_type, {:avro_primitive_type, "int", []}, []})
+  {:error, "not an integer value"}
+
+  ## Union types
+
+  iex> encode_value(
+  ...>  nil,
+  ...>  {:avro_union_type,
+  ...>   {2,
+  ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
+  ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  {:ok, nil}
+
+  iex> encode_value(
+  ...>  "d8d8d536-700d-4773-a950-90fdcd3ae686",
+  ...>  {:avro_union_type,
+  ...>   {2,
+  ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
+  ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  {:ok, "d8d8d536-700d-4773-a950-90fdcd3ae686"}
+
+  iex> encode_value(
+  ...>  "not-a-uuid-or-nil",
+  ...>  {:avro_union_type,
+  ...>   {2,
+  ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
+  ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  {:error, "no compatible type found"}
+
+  """
+  @spec encode_value(any(), :avro.name_or_type()) :: {:ok, any()} | {:error, any()}
+  def encode_value(value, {:avro_primitive_type, name, custom}) do
+    case List.keyfind(custom, "logicalType", 0) do
+      nil ->
+        validate_primitive(value, name)
+
+      {"logicalType", logical_type} ->
+        encode_logical(value, name, logical_type)
+    end
   end
 
+  def encode_value(values, {:avro_array_type, type, _custom}) when is_list(values) do
+    Enum.reduce_while(values, {:ok, []}, fn value, {:ok, result} ->
+      case encode_value(value, type) do
+        {:ok, encoded} -> {:cont, {:ok, result ++ [encoded]}}
+        error -> {:halt, error}
+      end
+    end)
+  end
+
+  def encode_value(values, {:avro_map_type, type, _custom}) when is_map(values) do
+    Enum.reduce_while(values, {:ok, %{}}, fn {key, value}, {:ok, result} ->
+      case encode_value(value, type) do
+        {:ok, encoded} -> {:cont, {:ok, Map.put(result, key, encoded)}}
+        error -> {:halt, error}
+      end
+    end)
+  end
+
+  def encode_value(value, {:avro_union_type, _id2type, _name2id} = union) do
+    Enum.reduce_while(:avro_union.get_types(union), {:error, "no compatible type found"},
+      fn type,
+                                                                                             res ->
+      case encode_value(value, type) do
+        {:ok, encoded} -> {:halt, {:ok, encoded}}
+        _error -> {:cont, res}
+      end
+    end)
+  end
+
+  # TODO properly validate references
+  def encode_value(_value, reference) when is_binary(reference), do: true
+
+  def encode_value(_value, _type), do: false
+
+  defp validate_primitive(value, "null") do
+    if is_nil(value) do
+      {:ok, value}
+    else
+      {:error, "not nil"}
+    end
+  end
+
+  defp validate_primitive(value, "boolean") do
+    if is_boolean(value) do
+      {:ok, value}
+    else
+      {:error, "not a boolean value"}
+    end
+  end
+
+  defp validate_primitive(value, "bytes") do
+    if is_binary(value) do
+      {:ok, value}
+    else
+      {:error, "not a binary value"}
+    end
+  end
+
+  defp validate_primitive(value, "double") do
+    if is_float(value) do
+      if value >= -1.7_976_931_348_623_157e308 and value <= 1.7_976_931_348_623_157e308 do
+        {:ok, value}
+      else
+        {:error, "value out of range"}
+      end
+    else
+      {:error, "not a float value"}
+    end
+  end
+
+  defp validate_primitive(value, "float") do
+    if is_float(value) do
+      if value >= -3.4_028_235e38 and value <= 3.4_028_235e38 do
+        {:ok, value}
+      else
+        {:error, "value out of range"}
+      end
+    else
+      {:error, "not a float value"}
+    end
+  end
+
+  defp validate_primitive(value, "int") do
+    if is_integer(value) do
+      if value >= -2_147_483_648 and value <= 2_147_483_647 do
+        {:ok, value}
+      else
+        {:error, "value out of range"}
+      end
+    else
+      {:error, "not an integer value"}
+    end
+  end
+
+  defp validate_primitive(value, "long") do
+    if is_integer(value) do
+      if value >= -9_223_372_036_854_775_808 and value <= 9_223_372_036_854_775_807 do
+        {:ok, value}
+      else
+        {:error, "value out of range"}
+      end
+    else
+      {:error, "not an integer value"}
+    end
+  end
+
+  defp validate_primitive(value, "string") do
+    if is_binary(value) do
+      {:ok, value}
+    else
+      {:error, "not a string value"}
+    end
+  end
+
+  defp encode_logical(value, "bytes", "decimal") do
+    if Decimal.is_decimal(value) do
+      {:error, "decimal encoding not implemented yet"}
+    else
+      {:error, "not a decimal value"}
+    end
+  end
+
+  defp encode_logical(value, "int", "date") do
+    case value do
+      %Date{} -> {:ok, Date.diff(value, ~D[1970-01-01])}
+      _ -> {:error, "not a date value"}
+    end
+  end
+
+  defp encode_logical(value, "int", "time-millis") do
+    case value do
+      %Time{} ->
+        {:ok, Time.diff(value, ~T[00:00:00.000], :millisecond)}
+
+      _ ->
+        {:error, "not a time value"}
+    end
+  end
+
+  defp encode_logical(value, "long", "time-micros") do
+    case value do
+      %Time{} ->
+        {:ok, Time.diff(value, ~T[00:00:00.000000], :microsecond)}
+
+      _ ->
+        {:error, "not a time value"}
+    end
+  end
+
+  defp encode_logical(value, "long", "timestamp-millis") do
+    case value do
+      %DateTime{} ->
+        {:ok, DateTime.to_unix(value, :millisecond)}
+
+      _ ->
+        {:error, "not a datetime value"}
+    end
+  end
+
+  defp encode_logical(value, "long", "timestamp-micros") do
+    case value do
+      %DateTime{} ->
+        {:ok, DateTime.to_unix(value, :microsecond)}
+
+      _ ->
+        {:error, "not a datetime value"}
+    end
+  end
+
+  defp encode_logical(value, "long", "local-timestamp-millis") do
+    case value do
+      %NaiveDateTime{} ->
+        {:ok, Timex.diff(value, ~N[1970-01-01 00:00:00.000000], :millisecond)}
+
+      _ ->
+        {:error, "not a naive datetime value"}
+    end
+  end
+
+  defp encode_logical(value, "long", "local-timestamp-micros") do
+    case value do
+      %NaiveDateTime{} ->
+        {:ok, Timex.diff(value, ~N[1970-01-01 00:00:00.000000], :microsecond)}
+
+      _ ->
+        {:error, "not a naive datetime value"}
+    end
+  end
+
+  defp encode_logical(value, "string", "uuid") do
+    case UUID.info(value) do
+      {:ok, _} -> {:ok, value}
+      _ -> {:error, "not a uuid value"}
+    end
+  end
+
+  defp encode_logical(_value, primitive_type, logical_type) do
+    {:error, "#{logical_type}[#{primitive_type}] encoding not implemented"}
+  end
+
+  @doc ~S"""
+  Decodes any avro value into its elixir format.
+
+  # Examples
+
+  ## Primitive types
+
+  iex> decode_value(true, {:avro_primitive_type, "boolean", []})
+  {:ok, true}
+
+  iex> decode_value(25, {:avro_primitive_type, "int", []})
+  {:ok, 25}
+
+  iex> decode_value(2_147_483_648, {:avro_primitive_type, "int", []})
+  {:error, "value out of range"}
+
+  iex> decode_value(19723, {:avro_primitive_type, "int", [{"logicalType", "date"}]})
+  {:ok, ~D[2024-01-01]}
+
+  iex> decode_value(3661123, {:avro_primitive_type, "int", [{"logicalType", "time-millis"}]})
+  {:ok, ~T[01:01:01.123]}
+
+  iex> decode_value(202.35, {:avro_primitive_type, "int", [{"logicalType", "date"}]})
+  {:error, "not an integer value"}
+
+  iex> decode_value(25699000123, {:avro_primitive_type, "long", [{"logicalType", "time-micros"}]})
+  {:ok, ~T[07:08:19.000123]}
+
+  iex> decode_value(1704070923000, {:avro_primitive_type, "long", [{"logicalType", "timestamp-millis"}]})
+  {:ok, ~U[2024-01-01 01:02:03.000Z]}
+
+  iex> decode_value(1263423607005000, {:avro_primitive_type, "long", [{"logicalType", "local-timestamp-micros"}]})
+  {:ok, ~N[2010-01-13 23:00:07.005000]}
+
+  iex> decode_value("2024-01-13 11:00:03.123", {:avro_primitive_type, "long", [{"logicalType", "timestamp-micros"}]})
+  {:error, "not an integer value"}
+
+  iex> decode_value("67caff17-798d-4b70-b9d0-781d27382fdc", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]})
+  {:ok, "67caff17-798d-4b70-b9d0-781d27382fdc"}
+
+  iex> decode_value("not-a-uuid", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]})
+  {:error, "not a uuid value"}
+
+  ## Array types
+
+  iex> decode_value(["one", "two"], {:avro_array_type, {:avro_primitive_type, "string", []}, []})
+  {:ok, ["one", "two"]}
+
+  iex> decode_value(["one", 2], {:avro_array_type, {:avro_primitive_type, "string", []}, []})
+  {:error, "not a string value"}
+
+  ## Map types
+
+  iex> decode_value(%{"one" => 1, "two" => 2}, {:avro_map_type, {:avro_primitive_type, "int", []}, []})
+  {:ok, %{"one" => 1, "two" => 2}}
+
+  iex> decode_value(%{"one" => 1, "two" => "2"}, {:avro_map_type, {:avro_primitive_type, "int", []}, []})
+  {:error, "not an integer value"}
+
+  ## Union types
+
+  iex> decode_value(
+  ...>  nil,
+  ...>  {:avro_union_type,
+  ...>   {2,
+  ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
+  ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  {:ok, nil}
+
+  iex> decode_value(
+  ...>  "d8d8d536-700d-4773-a950-90fdcd3ae686",
+  ...>  {:avro_union_type,
+  ...>   {2,
+  ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
+  ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  {:ok, "d8d8d536-700d-4773-a950-90fdcd3ae686"}
+
+  iex> decode_value(
+  ...>  "not-a-uuid-or-nil",
+  ...>  {:avro_union_type,
+  ...>   {2,
+  ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
+  ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  {:error, "no compatible type found"}
+
+  """
   @spec decode_value(any(), :avro.type_or_name()) :: {:ok, any()} | {:error, any()}
-  def decode_value(_, _) do
+  def decode_value(value, {:avro_primitive_type, name, custom}) do
+    case List.keyfind(custom, "logicalType", 0) do
+      nil ->
+        validate_primitive(value, name)
+
+      {"logicalType", logical_type} ->
+        decode_logical(value, name, logical_type)
+    end
+  end
+
+  def decode_value(values, {:avro_array_type, type, _custom}) when is_list(values) do
+    Enum.reduce_while(values, {:ok, []}, fn value, {:ok, result} ->
+      case decode_value(value, type) do
+        {:ok, decoded} -> {:cont, {:ok, result ++ [decoded]}}
+        error -> {:halt, error}
+      end
+    end)
+  end
+
+  def decode_value(values, {:avro_map_type, type, _custom}) when is_map(values) do
+    Enum.reduce_while(values, {:ok, %{}}, fn {key, value}, {:ok, result} ->
+      case decode_value(value, type) do
+        {:ok, decoded} -> {:cont, {:ok, Map.put(result, key, decoded)}}
+        error -> {:halt, error}
+      end
+    end)
+  end
+
+  def decode_value(value, {:avro_union_type, _id2type, _name2id} = union) do
+    Enum.reduce_while(:avro_union.get_types(union), {:error, "no compatible type found"}, fn type,
+                                                                                             res ->
+      case decode_value(value, type) do
+        {:ok, decoded} -> {:halt, {:ok, decoded}}
+        _error -> {:cont, res}
+      end
+    end)
+  end
+
+  defp decode_logical(_value, "bytes", "decimal") do
+    {:error, "decimal decoding not implemented yet"}
+  end
+
+  defp decode_logical(value, "int", "date") do
+    if is_integer(value) do
+      {:ok, Date.add(~D[1970-01-01], value)}
+    else
+      {:error, "not an integer value"}
+    end
+  end
+
+  defp decode_logical(value, "int", "time-millis") do
+    if is_integer(value) do
+      {:ok, Time.add(~T[00:00:00.000], value, :millisecond)}
+    else
+      {:error, "not an integer value"}
+    end
+  end
+
+  defp decode_logical(value, "long", "time-micros") do
+    if is_integer(value) do
+      {:ok, Time.add(~T[00:00:00.000000], value, :microsecond)}
+    else
+      {:error, "not an integer value"}
+    end
+  end
+
+  defp decode_logical(value, "long", "timestamp-millis") do
+    if is_integer(value) do
+      DateTime.from_unix(value, :millisecond)
+    else
+      {:error, "not an integer value"}
+    end
+  end
+
+  defp decode_logical(value, "long", "timestamp-micros") do
+    if is_integer(value) do
+      DateTime.from_unix(value, :microsecond)
+    else
+      {:error, "not an integer value"}
+    end
+  end
+
+  defp decode_logical(value, "long", "local-timestamp-millis") do
+    if is_integer(value) do
+      {:ok, Timex.add(~N[1970-01-01 00:00:00.000000], Timex.Duration.from_milliseconds(value))}
+    else
+      {:error, "not an integer value"}
+    end
+  end
+
+  defp decode_logical(value, "long", "local-timestamp-micros") do
+    if is_integer(value) do
+      {:ok, Timex.add(~N[1970-01-01 00:00:00.000000], Timex.Duration.from_microseconds(value))}
+    else
+      {:error, "not an integer value"}
+    end
+  end
+
+  defp decode_logical(value, "string", "uuid") do
+    case UUID.info(value) do
+      {:ok, _} -> {:ok, value}
+      _ -> {:error, "not a uuid value"}
+    end
+  end
+
+  defp decode_logical(_value, primitive_type, logical_type) do
+    {:error, "#{logical_type}[#{primitive_type}] decoding not implemented"}
   end
 
   # this is duplicated, put it in utils or something similar
