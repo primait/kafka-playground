@@ -1,6 +1,7 @@
 {
     "type": "record",
     "name": "AllTypesExample",
+    "namespace": "io.confluent",
     "doc": "Let's try with all types",
     "fields": [
         {
@@ -43,6 +44,20 @@
                 "logicalType": "date"
             },
             "doc": "Date."
+        },
+        {
+            "name": "uuid_field",
+            "type": {
+                "type": "string",
+                "logicalType": "uuid"
+            }
+        },
+        {
+            "name": "timestamp_millis_field",
+            "type": {
+                "type": "long",
+                "logicalType": "timestamp-millis"
+            }
         },
         {
             "name": "array_field",
@@ -128,6 +143,16 @@
                                 }
                             ]
                         }
+                    },
+                    {
+                        "name": "union_with_refs_field",
+                        "type": [
+                            "null",
+                            "NestedEnum",
+                            "ExampleEnum",
+                            "NestedRecord"
+                        ],
+                        "doc": "Nullable union of integer, string and array of longs."
                     }
                 ]
             }

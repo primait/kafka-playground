@@ -20,14 +20,15 @@ defmodule My.Fantastic.App.Atp.Players.Info.BirthInfo do
   end
 
   def to_avro_map(%__MODULE__{} = r) do
-    %{
-      "birthday" =>
-        ElixirAvro.Generator.Types.encode_value!(
-          r.birthday,
-          {:avro_primitive_type, "int", [{"logicalType", "date"}]},
-          My.Fantastic.App
-        ),
-      "father" => ElixirAvro.Generator.Types.encode_value!(r.father, "atp.players.info.Person", My.Fantastic.App)
-    }
+    {:ok,
+     %{
+       "birthday" =>
+         ElixirAvro.Generator.Types.encode_value!(
+           r.birthday,
+           {:avro_primitive_type, "int", [{"logicalType", "date"}]},
+           My.Fantastic.App
+         ),
+       "father" => ElixirAvro.Generator.Types.encode_value!(r.father, "atp.players.info.Person", My.Fantastic.App)
+     }}
   end
 end

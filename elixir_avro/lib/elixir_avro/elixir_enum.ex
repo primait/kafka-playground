@@ -33,9 +33,6 @@ defmodule ElixirAvro.ElixirEnum do
 
         def from_avro_string(unquote(string)),
           do: unquote(atom)
-
-        def to_avro_map(unquote(atom)),
-          do: to_avro_string(unquote(atom))
       end)
     end
   end

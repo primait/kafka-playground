@@ -365,7 +365,8 @@ defmodule ElixirAvro.Generator.Types do
 
   # TODO how should we test this?
   def encode_value(value, reference, module_prefix) when is_binary(reference) do
-    {:ok, :"#{module_prefix}.#{reference}".to_avro_map(value)}
+    # TODO to_avro_map could be rename to to_avro
+    :"#{module_prefix}.#{camelize(reference)}".to_avro_map(value)
   end
 
   def encode_value(_value, _type, _module_prefix), do: {:error, :not_supported}

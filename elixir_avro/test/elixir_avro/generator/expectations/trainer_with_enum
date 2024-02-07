@@ -20,11 +20,12 @@ defmodule My.Fantastic.App.Atp.Players.Trainer do
   end
 
   def to_avro_map(%__MODULE__{} = r) do
-    %{
-      "fullname" =>
-        ElixirAvro.Generator.Types.encode_value!(r.fullname, {:avro_primitive_type, "string", []}, My.Fantastic.App),
-      "level" =>
-        ElixirAvro.Generator.Types.encode_value!(r.level, "atp.players.trainers.TrainerLevel", My.Fantastic.App)
-    }
+    {:ok,
+     %{
+       "fullname" =>
+         ElixirAvro.Generator.Types.encode_value!(r.fullname, {:avro_primitive_type, "string", []}, My.Fantastic.App),
+       "level" =>
+         ElixirAvro.Generator.Types.encode_value!(r.level, "atp.players.trainers.TrainerLevel", My.Fantastic.App)
+     }}
   end
 end

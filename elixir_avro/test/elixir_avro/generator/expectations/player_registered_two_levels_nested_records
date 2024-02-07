@@ -36,33 +36,34 @@ defmodule My.Fantastic.App.Atp.Players.PlayerRegisteredTwoLevelsNestingRecords d
   end
 
   def to_avro_map(%__MODULE__{} = r) do
-    %{
-      "player_id" =>
-        ElixirAvro.Generator.Types.encode_value!(
-          r.player_id,
-          {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
-          My.Fantastic.App
-        ),
-      "full_name" =>
-        ElixirAvro.Generator.Types.encode_value!(r.full_name, {:avro_primitive_type, "string", []}, My.Fantastic.App),
-      "rank" => ElixirAvro.Generator.Types.encode_value!(r.rank, {:avro_primitive_type, "int", []}, My.Fantastic.App),
-      "registration_date" =>
-        ElixirAvro.Generator.Types.encode_value!(
-          r.registration_date,
-          {:avro_primitive_type, "int", [{"logicalType", "date"}]},
-          My.Fantastic.App
-        ),
-      "sponsor_name" =>
-        ElixirAvro.Generator.Types.encode_value!(
-          r.sponsor_name,
-          {:avro_union_type,
-           {2, {1, {:avro_primitive_type, "string", []}, {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
-           {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}},
-          My.Fantastic.App
-        ),
-      "trainer" => ElixirAvro.Generator.Types.encode_value!(r.trainer, "atp.players.Trainer", My.Fantastic.App),
-      "birth_info" =>
-        ElixirAvro.Generator.Types.encode_value!(r.birth_info, "atp.players.info.BirthInfo", My.Fantastic.App)
-    }
+    {:ok,
+     %{
+       "player_id" =>
+         ElixirAvro.Generator.Types.encode_value!(
+           r.player_id,
+           {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
+           My.Fantastic.App
+         ),
+       "full_name" =>
+         ElixirAvro.Generator.Types.encode_value!(r.full_name, {:avro_primitive_type, "string", []}, My.Fantastic.App),
+       "rank" => ElixirAvro.Generator.Types.encode_value!(r.rank, {:avro_primitive_type, "int", []}, My.Fantastic.App),
+       "registration_date" =>
+         ElixirAvro.Generator.Types.encode_value!(
+           r.registration_date,
+           {:avro_primitive_type, "int", [{"logicalType", "date"}]},
+           My.Fantastic.App
+         ),
+       "sponsor_name" =>
+         ElixirAvro.Generator.Types.encode_value!(
+           r.sponsor_name,
+           {:avro_union_type,
+            {2, {1, {:avro_primitive_type, "string", []}, {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
+            {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}},
+           My.Fantastic.App
+         ),
+       "trainer" => ElixirAvro.Generator.Types.encode_value!(r.trainer, "atp.players.Trainer", My.Fantastic.App),
+       "birth_info" =>
+         ElixirAvro.Generator.Types.encode_value!(r.birth_info, "atp.players.info.BirthInfo", My.Fantastic.App)
+     }}
   end
 end

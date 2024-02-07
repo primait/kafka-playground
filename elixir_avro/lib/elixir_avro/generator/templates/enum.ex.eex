@@ -11,4 +11,10 @@ defmodule <%= module_name %> do
   @values [
     <%= values |> Enum.map(&"\"#{&1}\"") |> Enum.join(", ") %>
   ]
+
+  def to_avro_map(value) do
+    {:ok, to_avro_string(value)}
+  rescue
+    _ -> {:error, :invalid_enum_value}
+  end
 end

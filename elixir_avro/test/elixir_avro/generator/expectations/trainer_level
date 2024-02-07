@@ -13,4 +13,10 @@ defmodule My.Fantastic.App.Atp.Players.Trainers.TrainerLevel do
     "INTERMEDIATE",
     "ADVANCE"
   ]
+
+  def to_avro_map(value) do
+    {:ok, to_avro_string(value)}
+  rescue
+    _ -> {:error, :invalid_enum_value}
+  end
 end
