@@ -22,14 +22,20 @@ defmodule ElixirAvro.ElixirEnum do
       end
 
       Enum.map(values, fn {atom, string} ->
-        defmacro unquote(atom)(),
+        defmacro unquote(:"#{atom}_")(),
           do: unquote(atom)
 
-        def to_string(unquote(atom)),
+        def unquote(atom)(),
+          do: unquote(atom)
+
+        def to_avro_string(unquote(atom)),
           do: unquote(string)
 
-        def from_string(unquote(string)),
+        def from_avro_string(unquote(string)),
           do: unquote(atom)
+
+        def to_avro_map(unquote(atom)),
+          do: to_avro_string(unquote(atom))
       end)
     end
   end

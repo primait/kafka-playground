@@ -363,10 +363,12 @@ defmodule ElixirAvro.Generator.Types do
     end)
   end
 
-  # TODO properly validate references
-  def encode_value(_value, reference, _module_prefix) when is_binary(reference), do: true
+  # TODO how should we test this?
+  def encode_value(value, reference, module_prefix) when is_binary(reference) do
+    {:ok, :"#{module_prefix}.#{reference}".to_avro_map(value)}
+  end
 
-  def encode_value(_value, _type, _module_prefix), do: false
+  def encode_value(_value, _type, _module_prefix), do: {:error, :not_supported}
 
   defp validate_primitive(value, "null") do
     if is_nil(value) do
