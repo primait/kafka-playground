@@ -15,10 +15,11 @@ defmodule ElixirAvro.Generator.TypesTest do
         {~T[01:01:01.123], {:avro_primitive_type, "int", [{"logicalType", "time-millis"}]}},
         {Time.utc_now(), {:avro_primitive_type, "long", [{"logicalType", "time-micros"}]}},
         {UUID.uuid4(), {:avro_primitive_type, "string", [{"logicalType", "uuid"}]}},
-        {[UUID.uuid4(), UUID.uuid4()], {:avro_array_type, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]}, []}}
+        {[UUID.uuid4(), UUID.uuid4()],
+         {:avro_array_type, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]}, []}}
       ],
       fn {value, type} ->
-        assert {:ok, encoded} = Types.encode_value(value, type)
+        assert {:ok, encoded} = Types.encode_value(value, type, "")
         assert {:ok, ^value} = Types.decode_value(encoded, type)
       end
     )

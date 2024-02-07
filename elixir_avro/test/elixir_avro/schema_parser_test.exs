@@ -35,7 +35,9 @@ defmodule ElixirAvro.SchemaParserTest do
     end
 
     test "enum" do
-      schema_reader = fn "atp.players.trainers.TrainerLevel" -> File.read!("#{@schemas_path}/trainer_level.avsc") end
+      schema_reader = fn "atp.players.trainers.TrainerLevel" ->
+        File.read!("#{@schemas_path}/trainer_level.avsc")
+      end
 
       assert %{
                "atp.players.Trainer" => trainer_with_enum(),
@@ -197,7 +199,8 @@ defmodule ElixirAvro.SchemaParserTest do
       [
         {:avro_record_field, "fullname", "Full name of the trainer.",
          {:avro_primitive_type, "string", []}, :undefined, :ascending, []},
-        {:avro_record_field, "level", "", "atp.players.trainers.TrainerLevel", :undefined, :ascending, []}
+        {:avro_record_field, "level", "", "atp.players.trainers.TrainerLevel", :undefined,
+         :ascending, []}
       ],
       "atp.players.Trainer",
       []

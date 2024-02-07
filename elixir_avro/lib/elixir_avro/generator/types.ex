@@ -224,25 +224,13 @@ defmodule ElixirAvro.Generator.Types do
     end
   end
 
-  @spec encode_value!(
-          value_expression :: String.t(),
-          :avro.type_or_name(),
-          module_prefix :: String.t()
-        ) :: String.t() | no_return()
-  def encode_value!(
-        value_expression,
-        {:avro_primitive_type, "int", [{"logicalType", "date"}]},
-        _module_prefix
-      ) do
-    "ElixirAvro.Generator.Types.Date.encode_value!(#{value_expression})"
-  end
-
-  def encode_value!(value_expression, fullname, module_prefix) when is_binary(fullname) do
-    "ElixirAvro.Generator.Types.Record.encode_value!(#{value_expression}, :\"#{module_prefix}.#{camelize(fullname)}\")"
-  end
-
-  def encode_value!(value_expression, _type, _module_prefix) do
-    value_expression
+  @spec encode_value!(any(), :avro.name_or_type(), module_prefix :: String.t()) ::
+          any() | no_return()
+  def encode_value!(value, type, module_prefix) do
+    case encode_value(value, type, module_prefix) do
+      {:ok, value} -> value
+      {:error, error} -> raise "Error during encoding of value: #{inspect(error)}"
+    end
   end
 
   @doc ~S"""
@@ -252,56 +240,56 @@ defmodule ElixirAvro.Generator.Types do
 
   ## Primitive types
 
-  iex> encode_value(true, {:avro_primitive_type, "boolean", []})
+  iex> encode_value(true, {:avro_primitive_type, "boolean", []}, "")
   {:ok, true}
 
-  iex> encode_value(25, {:avro_primitive_type, "int", []})
+  iex> encode_value(25, {:avro_primitive_type, "int", []}, "")
   {:ok, 25}
 
-  iex> encode_value(2_147_483_648, {:avro_primitive_type, "int", []})
+  iex> encode_value(2_147_483_648, {:avro_primitive_type, "int", []}, "")
   {:error, "value out of range"}
 
-  iex> encode_value(~D[2024-01-01], {:avro_primitive_type, "int", [{"logicalType", "date"}]})
+  iex> encode_value(~D[2024-01-01], {:avro_primitive_type, "int", [{"logicalType", "date"}]}, "")
   {:ok, 19723}
 
-  iex> encode_value(~T[01:01:01.123], {:avro_primitive_type, "int", [{"logicalType", "time-millis"}]})
+  iex> encode_value(~T[01:01:01.123], {:avro_primitive_type, "int", [{"logicalType", "time-millis"}]}, "")
   {:ok, 3661123}
 
-  iex> encode_value(~T[04:05:06.001002], {:avro_primitive_type, "int", [{"logicalType", "date"}]})
+  iex> encode_value(~T[04:05:06.001002], {:avro_primitive_type, "int", [{"logicalType", "date"}]}, "")
   {:error, "not a date value"}
 
-  iex> encode_value(~T[07:08:19.000123], {:avro_primitive_type, "long", [{"logicalType", "time-micros"}]})
+  iex> encode_value(~T[07:08:19.000123], {:avro_primitive_type, "long", [{"logicalType", "time-micros"}]}, "")
   {:ok, 25699000123}
 
-  iex> encode_value(~U[2024-01-01 01:02:03.000Z], {:avro_primitive_type, "long", [{"logicalType", "timestamp-millis"}]})
+  iex> encode_value(~U[2024-01-01 01:02:03.000Z], {:avro_primitive_type, "long", [{"logicalType", "timestamp-millis"}]}, "")
   {:ok, 1704070923000}
 
-  iex> encode_value(~N[2010-01-13 23:00:07.005], {:avro_primitive_type, "long", [{"logicalType", "local-timestamp-micros"}]})
+  iex> encode_value(~N[2010-01-13 23:00:07.005], {:avro_primitive_type, "long", [{"logicalType", "local-timestamp-micros"}]}, "")
   {:ok, 1263423607005000}
 
-  iex> encode_value(~N[2024-01-13 11:00:03.123], {:avro_primitive_type, "long", [{"logicalType", "timestamp-micros"}]})
+  iex> encode_value(~N[2024-01-13 11:00:03.123], {:avro_primitive_type, "long", [{"logicalType", "timestamp-micros"}]}, "")
   {:error, "not a datetime value"}
 
-  iex> encode_value("67caff17-798d-4b70-b9d0-781d27382fdc", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]})
+  iex> encode_value("67caff17-798d-4b70-b9d0-781d27382fdc", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]}, "")
   {:ok, "67caff17-798d-4b70-b9d0-781d27382fdc"}
 
-  iex> encode_value("not-a-uuid", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]})
+  iex> encode_value("not-a-uuid", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]}, "")
   {:error, "not a uuid value"}
 
   ## Array types
 
-  iex> encode_value(["one", "two"], {:avro_array_type, {:avro_primitive_type, "string", []}, []})
+  iex> encode_value(["one", "two"], {:avro_array_type, {:avro_primitive_type, "string", []}, []}, "")
   {:ok, ["one", "two"]}
 
-  iex> encode_value(["one", 2], {:avro_array_type, {:avro_primitive_type, "string", []}, []})
+  iex> encode_value(["one", 2], {:avro_array_type, {:avro_primitive_type, "string", []}, []}, "")
   {:error, "not a string value"}
 
   ## Map types
 
-  iex> encode_value(%{"one" => 1, "two" => 2}, {:avro_map_type, {:avro_primitive_type, "int", []}, []})
+  iex> encode_value(%{"one" => 1, "two" => 2}, {:avro_map_type, {:avro_primitive_type, "int", []}, []}, "")
   {:ok, %{"one" => 1, "two" => 2}}
 
-  iex> encode_value(%{"one" => 1, "two" => "2"}, {:avro_map_type, {:avro_primitive_type, "int", []}, []})
+  iex> encode_value(%{"one" => 1, "two" => "2"}, {:avro_map_type, {:avro_primitive_type, "int", []}, []}, "")
   {:error, "not an integer value"}
 
   ## Union types
@@ -312,7 +300,7 @@ defmodule ElixirAvro.Generator.Types do
   ...>   {2,
   ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
   ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
-  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, "")
   {:ok, nil}
 
   iex> encode_value(
@@ -321,7 +309,7 @@ defmodule ElixirAvro.Generator.Types do
   ...>   {2,
   ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
   ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
-  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, "")
   {:ok, "d8d8d536-700d-4773-a950-90fdcd3ae686"}
 
   iex> encode_value(
@@ -330,12 +318,13 @@ defmodule ElixirAvro.Generator.Types do
   ...>   {2,
   ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
   ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
-  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, "")
   {:error, "no compatible type found"}
 
   """
-  @spec encode_value(any(), :avro.name_or_type()) :: {:ok, any()} | {:error, any()}
-  def encode_value(value, {:avro_primitive_type, name, custom}) do
+  @spec encode_value(any(), :avro.name_or_type(), module_prefix :: String.t()) ::
+          {:ok, any()} | {:error, any()}
+  def encode_value(value, {:avro_primitive_type, name, custom}, _module_prefix) do
     case List.keyfind(custom, "logicalType", 0) do
       nil ->
         validate_primitive(value, name)
@@ -345,29 +334,29 @@ defmodule ElixirAvro.Generator.Types do
     end
   end
 
-  def encode_value(values, {:avro_array_type, type, _custom}) when is_list(values) do
+  def encode_value(values, {:avro_array_type, type, _custom}, module_prefix)
+      when is_list(values) do
     Enum.reduce_while(values, {:ok, []}, fn value, {:ok, result} ->
-      case encode_value(value, type) do
+      case encode_value(value, type, module_prefix) do
         {:ok, encoded} -> {:cont, {:ok, result ++ [encoded]}}
         error -> {:halt, error}
       end
     end)
   end
 
-  def encode_value(values, {:avro_map_type, type, _custom}) when is_map(values) do
+  def encode_value(values, {:avro_map_type, type, _custom}, module_prefix) when is_map(values) do
     Enum.reduce_while(values, {:ok, %{}}, fn {key, value}, {:ok, result} ->
-      case encode_value(value, type) do
+      case encode_value(value, type, module_prefix) do
         {:ok, encoded} -> {:cont, {:ok, Map.put(result, key, encoded)}}
         error -> {:halt, error}
       end
     end)
   end
 
-  def encode_value(value, {:avro_union_type, _id2type, _name2id} = union) do
-    Enum.reduce_while(:avro_union.get_types(union), {:error, "no compatible type found"},
-      fn type,
+  def encode_value(value, {:avro_union_type, _id2type, _name2id} = union, module_prefix) do
+    Enum.reduce_while(:avro_union.get_types(union), {:error, "no compatible type found"}, fn type,
                                                                                              res ->
-      case encode_value(value, type) do
+      case encode_value(value, type, module_prefix) do
         {:ok, encoded} -> {:halt, {:ok, encoded}}
         _error -> {:cont, res}
       end
@@ -375,9 +364,9 @@ defmodule ElixirAvro.Generator.Types do
   end
 
   # TODO properly validate references
-  def encode_value(_value, reference) when is_binary(reference), do: true
+  def encode_value(_value, reference, _module_prefix) when is_binary(reference), do: true
 
-  def encode_value(_value, _type), do: false
+  def encode_value(_value, _type, _module_prefix), do: false
 
   defp validate_primitive(value, "null") do
     if is_nil(value) do
