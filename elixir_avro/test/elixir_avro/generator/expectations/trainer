@@ -12,6 +12,8 @@ defmodule My.Fantastic.App.Atp.Players.Trainer do
 
   use TypedStruct
 
+  @expected_keys MapSet.new(["fullname"])
+
   typedstruct do
     field :fullname, String.t(), enforce: true
   end
@@ -22,5 +24,27 @@ defmodule My.Fantastic.App.Atp.Players.Trainer do
        "fullname" =>
          ElixirAvro.Generator.Types.encode_value!(r.fullname, {:avro_primitive_type, "string", []}, My.Fantastic.App)
      }}
+  end
+
+  def from_avro(%{
+        "fullname" => fullname
+      }) do
+    {:ok,
+     %__MODULE__{
+       fullname:
+         ElixirAvro.Generator.Types.decode_value!(fullname, {:avro_primitive_type, "string", []}, My.Fantastic.App)
+     }}
+  rescue
+    e -> {:error, inspect(e)}
+  end
+
+  def from_avro(%{} = invalid) do
+    actual = Map.keys(invalid) |> MapSet.new()
+    missing = MapSet.difference(@expected_keys, actual) |> Enum.join(", ")
+    {:error, "Missing keys: " <> missing}
+  end
+
+  def from_avro(_) do
+    {:error, "Expected a map"}
   end
 end

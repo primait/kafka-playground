@@ -537,6 +537,15 @@ defmodule ElixirAvro.Generator.Types do
     {:error, "#{logical_type}[#{primitive_type}] encoding not implemented"}
   end
 
+  @spec decode_value!(any(), :avro.name_or_type(), module_prefix :: String.t()) ::
+          any() | no_return()
+  def decode_value!(value, type, _module_prefix) do
+    case decode_value(value, type) do
+      {:ok, value} -> value
+      {:error, error} -> raise "Error during decoding of value: #{inspect(error)}"
+    end
+  end
+
   @doc ~S"""
   Decodes any avro value into its elixir format.
 

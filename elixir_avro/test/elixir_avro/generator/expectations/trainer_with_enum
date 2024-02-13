@@ -14,6 +14,8 @@ defmodule My.Fantastic.App.Atp.Players.Trainer do
 
   use TypedStruct
 
+  @expected_keys MapSet.new(["fullname", "level"])
+
   typedstruct do
     field :fullname, String.t(), enforce: true
     field :level, My.Fantastic.App.Atp.Players.Trainers.TrainerLevel.t(), enforce: true
@@ -27,5 +29,29 @@ defmodule My.Fantastic.App.Atp.Players.Trainer do
        "level" =>
          ElixirAvro.Generator.Types.encode_value!(r.level, "atp.players.trainers.TrainerLevel", My.Fantastic.App)
      }}
+  end
+
+  def from_avro(%{
+        "fullname" => fullname,
+        "level" => level
+      }) do
+    {:ok,
+     %__MODULE__{
+       fullname:
+         ElixirAvro.Generator.Types.decode_value!(fullname, {:avro_primitive_type, "string", []}, My.Fantastic.App),
+       level: ElixirAvro.Generator.Types.decode_value!(level, "atp.players.trainers.TrainerLevel", My.Fantastic.App)
+     }}
+  rescue
+    e -> {:error, inspect(e)}
+  end
+
+  def from_avro(%{} = invalid) do
+    actual = Map.keys(invalid) |> MapSet.new()
+    missing = MapSet.difference(@expected_keys, actual) |> Enum.join(", ")
+    {:error, "Missing keys: " <> missing}
+  end
+
+  def from_avro(_) do
+    {:error, "Expected a map"}
   end
 end
