@@ -365,8 +365,13 @@ defmodule ElixirAvro.Generator.Types do
 
   # TODO how should we test this?
   def encode_value(value, reference, module_prefix) when is_binary(reference) do
+    module = :"#{module_prefix}.#{camelize(reference)}"
     # TODO to_avro_map could be rename to to_avro
-    :"#{module_prefix}.#{camelize(reference)}".to_avro_map(value)
+    if function_exported?(module, :to_avro_map, 1) do
+      module.to_avro_map(value)
+    else
+      {:error, "unknown reference: #{reference}"}
+    end
   end
 
   def encode_value(_value, _type, _module_prefix), do: {:error, :not_supported}
@@ -678,7 +683,12 @@ defmodule ElixirAvro.Generator.Types do
   end
 
   def decode_value(value, reference, module_prefix) when is_binary(reference) do
-    :"#{module_prefix}.#{camelize(reference)}".from_avro(value)
+    module = :"#{module_prefix}.#{camelize(reference)}"
+    if function_exported?(module, :from_avro, 1) do
+      module.from_avro(value)
+    else
+      {:error, "unknown reference: #{reference}"}
+    end
   end
 
   defp decode_logical(_value, "bytes", "decimal") do
