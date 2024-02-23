@@ -20,7 +20,7 @@ defmodule ElixirAvro.Generator.TypesTest do
       ],
       fn {value, type} ->
         assert {:ok, encoded} = Types.encode_value(value, type, "")
-        assert {:ok, ^value} = Types.decode_value(encoded, type)
+        assert {:ok, ^value} = Types.decode_value(encoded, type, "")
       end
     )
   end

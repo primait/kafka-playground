@@ -539,8 +539,8 @@ defmodule ElixirAvro.Generator.Types do
 
   @spec decode_value!(any(), :avro.name_or_type(), module_prefix :: String.t()) ::
           any() | no_return()
-  def decode_value!(value, type, _module_prefix) do
-    case decode_value(value, type) do
+  def decode_value!(value, type, module_prefix) do
+    case decode_value(value, type, module_prefix) do
       {:ok, value} -> value
       {:error, error} -> raise "Error during decoding of value: #{inspect(error)}"
     end
@@ -553,56 +553,59 @@ defmodule ElixirAvro.Generator.Types do
 
   ## Primitive types
 
-  iex> decode_value(true, {:avro_primitive_type, "boolean", []})
+  iex> decode_value(nil, {:avro_primitive_type, "null", []}, "")
+  {:ok, nil}
+
+  iex> decode_value(true, {:avro_primitive_type, "boolean", []}, "")
   {:ok, true}
 
-  iex> decode_value(25, {:avro_primitive_type, "int", []})
+  iex> decode_value(25, {:avro_primitive_type, "int", []}, "")
   {:ok, 25}
 
-  iex> decode_value(2_147_483_648, {:avro_primitive_type, "int", []})
+  iex> decode_value(2_147_483_648, {:avro_primitive_type, "int", []}, "")
   {:error, "value out of range"}
 
-  iex> decode_value(19723, {:avro_primitive_type, "int", [{"logicalType", "date"}]})
+  iex> decode_value(19723, {:avro_primitive_type, "int", [{"logicalType", "date"}]}, "")
   {:ok, ~D[2024-01-01]}
 
-  iex> decode_value(3661123, {:avro_primitive_type, "int", [{"logicalType", "time-millis"}]})
+  iex> decode_value(3661123, {:avro_primitive_type, "int", [{"logicalType", "time-millis"}]}, "")
   {:ok, ~T[01:01:01.123]}
 
-  iex> decode_value(202.35, {:avro_primitive_type, "int", [{"logicalType", "date"}]})
+  iex> decode_value(202.35, {:avro_primitive_type, "int", [{"logicalType", "date"}]}, "")
   {:error, "not an integer value"}
 
-  iex> decode_value(25699000123, {:avro_primitive_type, "long", [{"logicalType", "time-micros"}]})
+  iex> decode_value(25699000123, {:avro_primitive_type, "long", [{"logicalType", "time-micros"}]}, "")
   {:ok, ~T[07:08:19.000123]}
 
-  iex> decode_value(1704070923000, {:avro_primitive_type, "long", [{"logicalType", "timestamp-millis"}]})
+  iex> decode_value(1704070923000, {:avro_primitive_type, "long", [{"logicalType", "timestamp-millis"}]}, "")
   {:ok, ~U[2024-01-01 01:02:03.000Z]}
 
-  iex> decode_value(1263423607005000, {:avro_primitive_type, "long", [{"logicalType", "local-timestamp-micros"}]})
+  iex> decode_value(1263423607005000, {:avro_primitive_type, "long", [{"logicalType", "local-timestamp-micros"}]}, "")
   {:ok, ~N[2010-01-13 23:00:07.005000]}
 
-  iex> decode_value("2024-01-13 11:00:03.123", {:avro_primitive_type, "long", [{"logicalType", "timestamp-micros"}]})
+  iex> decode_value("2024-01-13 11:00:03.123", {:avro_primitive_type, "long", [{"logicalType", "timestamp-micros"}]}, "")
   {:error, "not an integer value"}
 
-  iex> decode_value("67caff17-798d-4b70-b9d0-781d27382fdc", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]})
+  iex> decode_value("67caff17-798d-4b70-b9d0-781d27382fdc", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]}, "")
   {:ok, "67caff17-798d-4b70-b9d0-781d27382fdc"}
 
-  iex> decode_value("not-a-uuid", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]})
+  iex> decode_value("not-a-uuid", {:avro_primitive_type, "string", [{"logicalType", "uuid"}]}, "")
   {:error, "not a uuid value"}
 
   ## Array types
 
-  iex> decode_value(["one", "two"], {:avro_array_type, {:avro_primitive_type, "string", []}, []})
+  iex> decode_value(["one", "two"], {:avro_array_type, {:avro_primitive_type, "string", []}, []}, "")
   {:ok, ["one", "two"]}
 
-  iex> decode_value(["one", 2], {:avro_array_type, {:avro_primitive_type, "string", []}, []})
+  iex> decode_value(["one", 2], {:avro_array_type, {:avro_primitive_type, "string", []}, []}, "")
   {:error, "not a string value"}
 
   ## Map types
 
-  iex> decode_value(%{"one" => 1, "two" => 2}, {:avro_map_type, {:avro_primitive_type, "int", []}, []})
+  iex> decode_value(%{"one" => 1, "two" => 2}, {:avro_map_type, {:avro_primitive_type, "int", []}, []}, "")
   {:ok, %{"one" => 1, "two" => 2}}
 
-  iex> decode_value(%{"one" => 1, "two" => "2"}, {:avro_map_type, {:avro_primitive_type, "int", []}, []})
+  iex> decode_value(%{"one" => 1, "two" => "2"}, {:avro_map_type, {:avro_primitive_type, "int", []}, []}, "")
   {:error, "not an integer value"}
 
   ## Union types
@@ -613,7 +616,7 @@ defmodule ElixirAvro.Generator.Types do
   ...>   {2,
   ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
   ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
-  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, "")
   {:ok, nil}
 
   iex> decode_value(
@@ -622,7 +625,7 @@ defmodule ElixirAvro.Generator.Types do
   ...>   {2,
   ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
   ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
-  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, "")
   {:ok, "d8d8d536-700d-4773-a950-90fdcd3ae686"}
 
   iex> decode_value(
@@ -631,12 +634,12 @@ defmodule ElixirAvro.Generator.Types do
   ...>   {2,
   ...>    {1, {:avro_primitive_type, "string", [{"logicalType", "uuid"}]},
   ...>    {0, {:avro_primitive_type, "null", []}, nil, nil}, nil}},
-  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}})
+  ...>   {2, {"string", {1, true}, {"null", {0, true}, nil, nil}, nil}}}, "")
   {:error, "no compatible type found"}
 
   """
-  @spec decode_value(any(), :avro.type_or_name()) :: {:ok, any()} | {:error, any()}
-  def decode_value(value, {:avro_primitive_type, name, custom}) do
+  @spec decode_value(any(), :avro.type_or_name(), String.t()) :: {:ok, any()} | {:error, any()}
+  def decode_value(value, {:avro_primitive_type, name, custom}, _module_prefix) do
     case List.keyfind(custom, "logicalType", 0) do
       nil ->
         validate_primitive(value, name)
@@ -646,32 +649,36 @@ defmodule ElixirAvro.Generator.Types do
     end
   end
 
-  def decode_value(values, {:avro_array_type, type, _custom}) when is_list(values) do
+  def decode_value(values, {:avro_array_type, type, _custom}, module_prefix) when is_list(values) do
     Enum.reduce_while(values, {:ok, []}, fn value, {:ok, result} ->
-      case decode_value(value, type) do
+      case decode_value(value, type, module_prefix) do
         {:ok, decoded} -> {:cont, {:ok, result ++ [decoded]}}
         error -> {:halt, error}
       end
     end)
   end
 
-  def decode_value(values, {:avro_map_type, type, _custom}) when is_map(values) do
+  def decode_value(values, {:avro_map_type, type, _custom}, module_prefix) when is_map(values) do
     Enum.reduce_while(values, {:ok, %{}}, fn {key, value}, {:ok, result} ->
-      case decode_value(value, type) do
+      case decode_value(value, type, module_prefix) do
         {:ok, decoded} -> {:cont, {:ok, Map.put(result, key, decoded)}}
         error -> {:halt, error}
       end
     end)
   end
 
-  def decode_value(value, {:avro_union_type, _id2type, _name2id} = union) do
+  def decode_value(value, {:avro_union_type, _id2type, _name2id} = union, module_prefix) do
     Enum.reduce_while(:avro_union.get_types(union), {:error, "no compatible type found"}, fn type,
                                                                                              res ->
-      case decode_value(value, type) do
+      case decode_value(value, type, module_prefix) do
         {:ok, decoded} -> {:halt, {:ok, decoded}}
         _error -> {:cont, res}
       end
     end)
+  end
+
+  def decode_value(value, reference, module_prefix) when is_binary(reference) do
+    :"#{module_prefix}.#{camelize(reference)}".from_avro(value)
   end
 
   defp decode_logical(_value, "bytes", "decimal") do

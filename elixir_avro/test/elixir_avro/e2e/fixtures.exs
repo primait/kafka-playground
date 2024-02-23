@@ -1,7 +1,7 @@
-defmodule ElixirAvro.E2E.ToAvroMap do
+defmodule ElixirAvro.E2E.Fixtures do
   use ExUnit.Case
 
-  def all_types_example() do
+  def all_types_example(:struct) do
     union = 42
     union_with_refs = MyApp.AvroGenerated.Io.Confluent.ExampleEnum.symbol1()
 
@@ -32,10 +32,19 @@ defmodule ElixirAvro.E2E.ToAvroMap do
         union_with_refs_field: union_with_refs
       }
     }
+  end
+
+  def all_types_example(:map) do
+    :struct
+    |> all_types_example()
     |> MyApp.AvroGenerated.Io.Confluent.AllTypesExample.to_avro_map()
   end
 
-  def all_types_example2() do
+  def all_types_example(:from_avro, map) do
+    MyApp.AvroGenerated.Io.Confluent.AllTypesExample.from_avro(map)
+  end
+
+  def all_types_example2(:map) do
     union = [124, 1_000_001]
     union_with_refs = MyApp.AvroGenerated.Io.Confluent.NestedEnum.nested_symbol1()
 

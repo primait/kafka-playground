@@ -17,4 +17,10 @@ defmodule <%= module_name %> do
   rescue
     _ -> {:error, :invalid_enum_value}
   end
+
+  def from_avro(value) do
+    {:ok, from_avro_string(value)}
+  rescue
+    _ -> {:error, :invalid_enum_string_value}
+  end
 end

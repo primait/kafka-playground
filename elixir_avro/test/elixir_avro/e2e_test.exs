@@ -30,19 +30,19 @@ defmodule ElixirAvro.E2ETest do
 
     Enum.map(files, &Code.compile_file(Path.join(generated_path, &1)))
 
-    Code.compile_file("test/elixir_avro/e2e/to_avro_map.exs")
+    Code.compile_file("test/elixir_avro/e2e/fixtures.exs")
   end
 
   test "encode and decode" do
     # We need to define a variable to reference modules just compiled
-    to_avro_map = ElixirAvro.E2E.ToAvroMap
+    # avoiding a warning about undefined module
+    to_avro_map = ElixirAvro.E2E.Fixtures
 
-    assert {:ok, avro_map} = to_avro_map.all_types_example()
+    assert {:ok, avro_map} = to_avro_map.all_types_example(:map)
 
     assert {:ok, encoded} =
-             AvroraClient.encode_plain(avro_map,
-               schema_name: "AllTypesExample"
-             )
+             AvroraClient.encode_plain(avro_map |> IO.inspect(),
+               schema_name: "AllTypesExample")
 
     assert {:ok,
             %{
@@ -71,14 +71,16 @@ defmodule ElixirAvro.E2ETest do
               "timestamp_millis_field" => 1_704_070_923_000,
               "union_field" => 42,
               "uuid_field" => "34de4cfa-ced0-4b4a-bf2d-bd2e9283a40a"
-            }} == AvroraClient.decode_plain(encoded, schema_name: "AllTypesExample")
+            } = decoded} = AvroraClient.decode_plain(encoded, schema_name: "AllTypesExample")
+
+    assert {:ok, to_avro_map.all_types_example(:struct)} == to_avro_map.all_types_example(:from_avro, decoded)
   end
 
   test "encode and decode, array as union value" do
     # We need to define a variable to reference modules just compiled
-    to_avro_map = ElixirAvro.E2E.ToAvroMap
+    to_avro_map = ElixirAvro.E2E.Fixtures
 
-    assert {:ok, avro_map} = to_avro_map.all_types_example2()
+    assert {:ok, avro_map} = to_avro_map.all_types_example2(:map)
 
     assert {:ok, encoded} =
              AvroraClient.encode_plain(avro_map,
