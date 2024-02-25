@@ -15,7 +15,8 @@ defmodule ElixirAvro.Generator.Content do
     |> Enum.into(%{})
   end
 
-  @spec module_content(erlavro_schema_parsed :: tuple, module_prefix :: String.t()) :: String.t()
+  @spec module_content(erlavro_schema_parsed :: tuple, module_prefix :: String.t()) ::
+          {String.t(), String.t()}
   defp module_content(
          erlavro_schema_parsed,
          module_prefix

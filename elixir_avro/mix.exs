@@ -25,6 +25,7 @@ defmodule ElixirAvro.MixProject do
       {:avrora, "~> 0.21"},
       {:credo, "~> 1.7"},
       {:decimal, "~> 2.0"},
+      {:dialyxir, "~> 1.4"},
       {:excribe, "~> 0.1.1"},
       {:timex, "~> 3.7.11"},
       {:typed_struct, "~> 0.3.0"},

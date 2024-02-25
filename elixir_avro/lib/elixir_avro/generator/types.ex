@@ -208,7 +208,7 @@ defmodule ElixirAvro.Generator.Types do
     raise ArgumentError, message: "unsupported avro type: #{inspect(type)}"
   end
 
-  @spec get_spec_string(map, String.t()) :: String.t() | no_return()
+  @spec get_spec_string(map, String.t() | {String.t(), String.t()}) :: String.t() | no_return()
   defp get_spec_string(types_map, type) do
     case Map.get(types_map, type) do
       nil -> raise ArgumentError, message: "unsupported type: #{inspect(type)}"
@@ -216,7 +216,7 @@ defmodule ElixirAvro.Generator.Types do
     end
   end
 
-  @spec encode_value!(any(), :avro.name_or_type(), module_prefix :: String.t()) ::
+  @spec encode_value!(any(), :avro.type_or_name(), module_prefix :: String.t()) ::
           any() | no_return()
   def encode_value!(value, type, module_prefix) do
     case encode_value(value, type, module_prefix) do
@@ -314,7 +314,7 @@ defmodule ElixirAvro.Generator.Types do
   {:error, "no compatible type found"}
 
   """
-  @spec encode_value(any(), :avro.name_or_type(), module_prefix :: String.t()) ::
+  @spec encode_value(any(), :avro.type_or_name(), module_prefix :: String.t()) ::
           {:ok, any()} | {:error, any()}
   def encode_value(value, {:avro_primitive_type, name, custom}, _module_prefix) do
     case List.keyfind(custom, "logicalType", 0) do
@@ -534,7 +534,7 @@ defmodule ElixirAvro.Generator.Types do
     {:error, "#{logical_type}[#{primitive_type}] encoding not implemented"}
   end
 
-  @spec decode_value!(any(), :avro.name_or_type(), module_prefix :: String.t()) ::
+  @spec decode_value!(any(), :avro.type_or_name(), module_prefix :: String.t()) ::
           any() | no_return()
   def decode_value!(value, type, module_prefix) do
     case decode_value(value, type, module_prefix) do

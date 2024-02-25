@@ -42,7 +42,8 @@ defmodule ElixirAvro.E2ETest do
 
     assert {:ok, encoded} =
              AvroraClient.encode_plain(avro_map,
-               schema_name: "AllTypesExample")
+               schema_name: "AllTypesExample"
+             )
 
     assert {:ok,
             %{
@@ -78,7 +79,8 @@ defmodule ElixirAvro.E2ETest do
     assert rounded_float == Float.round(float_value, 2)
     decoded = Map.put(decoded, "float_field", rounded_float)
 
-    assert {:ok, to_avro_map.all_types_example(:struct)} == to_avro_map.all_types_example(:from_avro, decoded)
+    assert {:ok, to_avro_map.all_types_example(:struct)} ==
+             to_avro_map.all_types_example(:from_avro, decoded)
   end
 
   test "encode and decode, array as union value" do
