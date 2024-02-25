@@ -1,7 +1,12 @@
 defmodule Mix.Tasks.ElixirAvro.Generate.Code do
+  @moduledoc """
+  Mix task to generate elixir modules (enums and structs)
+  that map avro schemas.
+  """
+
   use Mix.Task
 
-  alias ElixirAvro.Generator.ContentGenerator
+  alias ElixirAvro.Generator.Content, as: ContentGenerator
   alias Mix.Shell.IO, as: ShellIO
 
   @impl Mix.Task

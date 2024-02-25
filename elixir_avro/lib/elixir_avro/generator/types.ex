@@ -4,6 +4,8 @@ defmodule ElixirAvro.Generator.Types do
   types from and into elixir types.
   """
 
+  alias ElixirAvro.Generator.Names
+
   require Decimal
 
   # see: https://avro.apache.org/docs/1.11.0/spec.html#schema_primitive
@@ -194,24 +196,14 @@ defmodule ElixirAvro.Generator.Types do
   def to_spec_string!({:avro_union_type, _id2type, _name2id} = union, module_prefix) do
     union
     |> :avro_union.get_types()
-    |> Enum.map(&to_spec_string!(&1, module_prefix))
-    |> Enum.join(" | ")
-  end
-
-  # TODO should I delete this?
-  def to_spec_string!(
-        {:avro_record_field, _name, _doc, fullname, _default, _ordering, _aliases},
-        _module_prefix
-      )
-      when is_binary(fullname) do
-    # eg: fullname=atp.players.Trainer
-    "#{camelize(fullname)}.t(), enforce: true"
+    |> Enum.map_join(" | ", &to_spec_string!(&1, module_prefix))
   end
 
   def to_spec_string!(reference, module_prefix) when is_binary(reference) do
-    "#{camelize(module_prefix)}.#{camelize(reference)}.t()"
+    "#{Names.camelize(module_prefix)}.#{Names.camelize(reference)}.t()"
   end
 
+  # TODO add test for this
   def to_spec_string!(type, _base_path) do
     raise ArgumentError, message: "unsupported avro type: #{inspect(type)}"
   end
@@ -365,7 +357,7 @@ defmodule ElixirAvro.Generator.Types do
 
   # TODO how should we test this?
   def encode_value(value, reference, module_prefix) when is_binary(reference) do
-    module = :"#{module_prefix}.#{camelize(reference)}"
+    module = :"#{module_prefix}.#{Names.camelize(reference)}"
     # TODO to_avro_map could be rename to to_avro
     if function_exported?(module, :to_avro_map, 1) do
       module.to_avro_map(value)
@@ -654,7 +646,8 @@ defmodule ElixirAvro.Generator.Types do
     end
   end
 
-  def decode_value(values, {:avro_array_type, type, _custom}, module_prefix) when is_list(values) do
+  def decode_value(values, {:avro_array_type, type, _custom}, module_prefix)
+      when is_list(values) do
     Enum.reduce_while(values, {:ok, []}, fn value, {:ok, result} ->
       case decode_value(value, type, module_prefix) do
         {:ok, decoded} -> {:cont, {:ok, result ++ [decoded]}}
@@ -683,7 +676,7 @@ defmodule ElixirAvro.Generator.Types do
   end
 
   def decode_value(value, reference, module_prefix) when is_binary(reference) do
-    module = :"#{module_prefix}.#{camelize(reference)}"
+    module = :"#{module_prefix}.#{Names.camelize(reference)}"
     if function_exported?(module, :from_avro, 1) do
       module.from_avro(value)
     else
@@ -760,13 +753,5 @@ defmodule ElixirAvro.Generator.Types do
 
   defp decode_logical(_value, primitive_type, logical_type) do
     {:error, "#{logical_type}[#{primitive_type}] decoding not implemented"}
-  end
-
-  # this is duplicated, put it in utils or something similar
-  defp camelize(fullname) do
-    fullname
-    |> String.split(".")
-    |> Enum.map(&Macro.camelize/1)
-    |> Enum.join(".")
   end
 end

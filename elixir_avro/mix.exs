@@ -23,6 +23,7 @@ defmodule ElixirAvro.MixProject do
   defp deps do
     [
       {:avrora, "~> 0.21"},
+      {:credo, "~> 1.7"},
       {:decimal, "~> 2.0"},
       {:excribe, "~> 0.1.1"},
       {:timex, "~> 3.7.11"},

@@ -1,4 +1,8 @@
 defmodule ElixirAvro.SchemaParser do
+  @moduledoc """
+  Schema parser that uses erlavro and ets to store decoded schemas.
+  """
+
   # avoid to overwrite same types and break if the defitions are different, check if add_type already does it
   # apparently there is `allow_type_redefine`, let's test if it works as expected
 
@@ -29,7 +33,6 @@ defmodule ElixirAvro.SchemaParser do
 
   defp lookup_type(ref, read_schema_fun, lookup_table) do
     looked_up = :avro_schema_store.lookup_type(ref, lookup_table)
-    # TODO Give precedence to lookup_table, does it make sense?
     # TODO write a test for the edge cases
     if looked_up do
       {:ok, type} = looked_up

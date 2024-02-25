@@ -1,5 +1,7 @@
-defmodule ElixirAvro.Generator.ContentGenerator do
+defmodule ElixirAvro.Generator.Content do
   @moduledoc false
+
+  alias ElixirAvro.Generator.Names
 
   @spec modules_content_from_schema(
           schema_content :: String.t(),
@@ -63,14 +65,14 @@ defmodule ElixirAvro.Generator.ContentGenerator do
          {:avro_record_type, _name, _namespace, _doc, _, _fields, fullname, _},
          module_prefix
        ) do
-    module_prefix <> "." <> camelize(fullname)
+    module_prefix <> "." <> Names.camelize(fullname)
   end
 
   defp module_name(
          {:avro_enum_type, _name, _namespace, _aliases, _doc, _symbols, fullname, _custom},
          module_prefix
        ) do
-    module_prefix <> "." <> camelize(fullname)
+    module_prefix <> "." <> Names.camelize(fullname)
   end
 
   defp module_doc(
@@ -109,13 +111,5 @@ defmodule ElixirAvro.Generator.ContentGenerator do
       name: name,
       erlavro_type: type
     }
-  end
-
-  # this is duplicated, put it in utils or something similar
-  defp camelize(fullname) do
-    fullname
-    |> String.split(".")
-    |> Enum.map(&:string.titlecase/1)
-    |> Enum.join(".")
   end
 end

@@ -40,7 +40,7 @@ defmodule ElixirAvro.Generator.ContentGeneratorTest do
   }
   """
 
-  alias ElixirAvro.Generator.ContentGenerator
+  alias ElixirAvro.Generator.Content, as: ContentGenerator
 
   test "inline record" do
     assert %{
