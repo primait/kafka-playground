@@ -1,4 +1,4 @@
-defmodule ElixirAvro.Generator.ContentGeneratorTest do
+defmodule ElixirAvro.Generator.ContentTest do
   use ExUnit.Case
 
   @expectations_folder "expectations"
