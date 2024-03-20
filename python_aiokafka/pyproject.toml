@@ -13,7 +13,7 @@ primapy-tracing = {git = "git@github.com:primait/primapy-tracing.git", rev = "1.
 
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.10.1"
+black = "^24.3.0"
 isort = "^5.12.0"
 dataclasses-avroschema = "^0.54.2"
 
